@@ -1,0 +1,16 @@
+{
+  "name": "alpha-A3",
+  "description": "A3 连板龙头接力因子：三层架构（Layer1 横截面强度打分 + Layer2 时序市场状态机 + Layer3 早盘事件触发），识别每日 ≥3 板高度龙头并生成 T+1 接力信号（开盘买、收盘卖，封板顺延 t+2）。基于 PandaData，次日开盘可成交回测，标准 0.003 + 压力 0.005 双成本门槛，并按 market_state（容错/中性/加速）分组验证状态机有效性。",
+  "version": "1.0.0",
+  "factor_id": "A3",
+  "asset_type": "stock",
+  "data_version": "pandadata-relay-streak3-v1",
+  "entrypoint": "scripts/factor.py",
+  "entrypoints": {
+    "factor": "scripts/factor.py",
+    "validate": "scripts/validate.py",
+    "backtest": "scripts/backtest.py",
+    "update_production": "scripts/update_production.py"
+  },
+  "tags": ["quant", "alpha", "development", "stock", "limit_up", "hotmoney_relay"]
+}

@@ -1,0 +1,109 @@
+{
+  "fitted_at": "2026-06-21T00:58:03.851014",
+  "start": "20230619",
+  "is_end": "20251218",
+  "indicator": "",
+  "n_samples": 6580,
+  "curve": {
+    "2": -0.3656,
+    "3": -0.3755,
+    "4": -0.5588,
+    "5": -0.3556,
+    "6": -0.4451,
+    "7": -1.0,
+    "8": -0.1327,
+    "9": -0.7547,
+    "10": 1.0,
+    "11": 0.046,
+    "12": 0.5867,
+    "13": -0.2875
+  },
+  "default_below_min": 0.0,
+  "default_above_max": -0.2875362165787903,
+  "raw_stats": [
+    {
+      "streak": 2,
+      "n": 4095,
+      "avg_fwd_return": -0.012307,
+      "win_rate": 0.3951,
+      "std": 0.106917
+    },
+    {
+      "streak": 3,
+      "n": 1274,
+      "avg_fwd_return": -0.01279,
+      "win_rate": 0.4458,
+      "std": 0.109212
+    },
+    {
+      "streak": 4,
+      "n": 591,
+      "avg_fwd_return": -0.021699,
+      "win_rate": 0.4196,
+      "std": 0.118066
+    },
+    {
+      "streak": 5,
+      "n": 292,
+      "avg_fwd_return": -0.011822,
+      "win_rate": 0.4384,
+      "std": 0.120565
+    },
+    {
+      "streak": 6,
+      "n": 152,
+      "avg_fwd_return": -0.016173,
+      "win_rate": 0.375,
+      "std": 0.119452
+    },
+    {
+      "streak": 7,
+      "n": 80,
+      "avg_fwd_return": -0.043145,
+      "win_rate": 0.3375,
+      "std": 0.116342
+    },
+    {
+      "streak": 8,
+      "n": 41,
+      "avg_fwd_return": -0.000989,
+      "win_rate": 0.4878,
+      "std": 0.139924
+    },
+    {
+      "streak": 9,
+      "n": 25,
+      "avg_fwd_return": -0.03122,
+      "win_rate": 0.36,
+      "std": 0.151325
+    },
+    {
+      "streak": 10,
+      "n": 9,
+      "avg_fwd_return": 0.054071,
+      "win_rate": 0.6667,
+      "std": 0.161876
+    },
+    {
+      "streak": 11,
+      "n": 10,
+      "avg_fwd_return": 0.007701,
+      "win_rate": 0.6,
+      "std": 0.124286
+    },
+    {
+      "streak": 12,
+      "n": 6,
+      "avg_fwd_return": 0.033982,
+      "win_rate": 0.6667,
+      "std": 0.102187
+    },
+    {
+      "streak": 13,
+      "n": 5,
+      "avg_fwd_return": -0.008513,
+      "win_rate": 0.6,
+      "std": 0.114848
+    }
+  ]
+}

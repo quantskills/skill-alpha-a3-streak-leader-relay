@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# 临时缓存 / 大数据原始导出
+prices/
+real_runs/
+sources/
+*.parquet.bak
+*.tmp
+
+# 个人凭证 / 配置（防误传）
+.env
+.env.local
+*.local
+~/.pandadata/
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
