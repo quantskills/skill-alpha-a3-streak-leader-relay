@@ -199,9 +199,9 @@ def render_factor_review(factor_reports, strategy_scenarios, parquet_path) -> st
         findings.append({
             "kind": "warn" if cost_sensitive else "neutral",
             "title": "成本敏感度",
-            "text": f"标准 0.30% ARR=<strong>{oos_arr:+.1f}%</strong> → 压力 0.50% ARR=<strong>{oos_arr_stress:+.1f}%</strong>。" +
-                    ("⚠️ 仅 0.20% 成本差就翻负 — 实盘费率必须 &lt; 0.30% 双边" if cost_sensitive
-                     else "成本不敏感")
+            "text": f"标准 0.10% ARR=<strong>{oos_arr:+.1f}%</strong> → 压力 0.15% ARR=<strong>{oos_arr_stress:+.1f}%</strong>。" +
+                    ("⚠️ 0.05% 滑点会侵蚀部分收益,但仍可正向" if cost_sensitive
+                     else "成本不敏感 — 万五佣金 + 印花税即可")
         })
 
     # 6) IC gate 增益
@@ -233,7 +233,7 @@ def render_factor_review(factor_reports, strategy_scenarios, parquet_path) -> st
     if oos_ic and oos_ic > 0.05:
         advice.append(("✅", "paper trading 跑 1-2 个月活样本验证真实表现"))
     if oos_arr_stress is not None and oos_arr is not None and oos_arr > 0 > oos_arr_stress:
-        advice.append(("⚠️", "实盘费率必须 &lt; 0.30% 双边（印花税 0.1% + 佣金 + 滑点 &lt; 0.2%）"))
+        advice.append(("⚠️", "费率敏感 — 实盘双边需 &lt; 0.15%（万五佣金 + 印花税 + 滑点）"))
     if oos_gate_arr is not None and oos_arr is not None and oos_gate_arr < oos_arr:
         advice.append(("💡", "IC gate 当前是冗余约束，直接用纯 A3 + 人工选时即可"))
     advice.append(("📋", "每日只入 score≥80 且 fillable=True 的信号；rank=1 一字板要果断放弃"))
@@ -405,7 +405,7 @@ def render_hero(factor_reports, strategy_scenarios) -> str:
     if oos_pure:
         m = oos_pure.get("metrics", {})
         primary_cards += [
-            ("ARR% (OOS, 纯A3, 0.30%)", fmt(m.get("ARR_pct"), "%"), "good", "近 6 月年化"),
+            ("ARR% (OOS, 纯A3, 0.10%)", fmt(m.get("ARR_pct"), "%"), "good", "近 6 月年化"),
             ("夏普 (OOS, 纯A3)", fmt(m.get("夏普")), "good", "目标 > 0.5"),
             ("累计% (OOS)", fmt(m.get("累计收益_pct"), "%"), "good", "近 6 月累计"),
             ("胜率 (OOS)", f"{m.get('胜率', 0)*100:.1f}%", "good", "盈利天数占比"),
@@ -479,7 +479,7 @@ def _chart_div(canvas_id, title, height=320, note=""):
 # ============================================================
 def render_charts_section(factor_reports, strategy_scenarios) -> str:
     parts = ['<section><h2>🌟 OOS 样本外（推荐主视图）</h2>']
-    parts.append('<p class="hint">区间：最近 6 个月 · 每日 score≥80 取 top-N · t+1 open 进 t+2 vwap 出 · 双成本 0.30%</p>')
+    parts.append('<p class="hint">区间：最近 6 个月 · 每日 score≥80 取 top-N · t+1 open 进 t+2 vwap 出 · 双成本 0.10%（万五佣金+印花税真实费率）</p>')
 
     oos_pure = find_strategy(strategy_scenarios, "OOS", "纯A3", "标准")
     oos_gate = find_strategy(strategy_scenarios, "OOS", "IC gate", "标准")
@@ -529,7 +529,7 @@ def render_matrix_section(strategy_scenarios) -> str:
 
     intervals = [("OOS", "🌟 OOS 样本外"), ("IS", "IS 样本内"), ("ALL", "ALL 全样本")]
     groups = [("纯A3", "纯 A3"), ("IC gate", "含 IC gate")]
-    costs = [("标准", "标准 0.30%"), ("压力", "压力 0.50%")]
+    costs = [("标准", "标准 0.10%"), ("压力", "压力 0.15%")]
 
     parts = ['<section><h2>🎯 多组合矩阵</h2>']
     parts.append('<p class="hint">3 区间 × 2 组 × 2 成本 共 12 个组合。绿色 = 正向，红色 = 负向，灰色 = 全样本含因子失效期</p>')

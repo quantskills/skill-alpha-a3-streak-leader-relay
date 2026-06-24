@@ -12,7 +12,7 @@ Alpha-A3 策略层回测（仓位约束 + 真实可达收益）
   - 入场: t+1 open
   - 出场: t+2 vwap (= amount / volume)
   - 不可成交跳过: t+1 一字板 / 开盘涨停 / 停牌
-  - 双成本门槛: 标准 0.30% / 压力 0.50%
+  - 双成本门槛: 标准 0.10%（万五佣金 + 印花税,真实费率）/ 压力 0.15%（含滑点）
   - 等权分仓（每只 1/N）
   - 当日资金 100% 使用
 
@@ -43,8 +43,8 @@ DEFAULT_REPORT_MD = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "st
 DEFAULT_REPORT_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "strategy_backtest_metrics.json"
 
 TRADING_DAYS_PER_YEAR = 244
-COST_STD = 0.003
-COST_STRESS = 0.005
+COST_STD = 0.0010      # 标准：万五佣金 + 印花税（A 股真实双边费率）
+COST_STRESS = 0.0015   # 压力：标准 + 0.05% 滑点
 
 
 # ============================================================
@@ -187,7 +187,7 @@ def render_markdown(scenarios: list[dict], cfg: dict) -> str:
     L.append("- **入场**: t+1 open")
     L.append("- **出场**: t+2 vwap (= amount / volume)")
     L.append("- **跳过**: t+1 一字板 / 开盘涨停 / 停牌")
-    L.append("- **成本**: 标准 0.30% / 压力 0.50%（双边一次性扣）")
+    L.append("- **成本**: 标准 0.10%（万五佣金 + 印花税）/ 压力 0.15%（含滑点）— 双边一次性扣")
     L.append("- **样本外 OOS**: 最近 6 个月")
     L.append("")
 
@@ -254,7 +254,7 @@ def main() -> None:
 
     scenarios = []
     for label_panel, panel_part in [("ALL 全样本", panel), ("IS 样本内", is_panel), ("OOS 样本外", oos_panel)]:
-        for cost, cost_label in [(COST_STD, "标准 0.30%"), (COST_STRESS, "压力 0.50%")]:
+        for cost, cost_label in [(COST_STD, "标准 0.10%"), (COST_STRESS, "压力 0.15%")]:
             for gate_on, gate_label in [(False, "组A 纯A3"), (True, "组B 含IC gate")]:
                 # 三个区间 (ALL/IS/OOS) 标准成本下都生成曲线，供 HTML 多维度展示
                 with_curve = (cost == COST_STD)
@@ -284,7 +284,7 @@ def main() -> None:
     # 控制台速览
     print()
     print("=" * 64)
-    print(f"速览（标准成本 0.30%）")
+    print(f"速览（标准成本 0.10%）")
     print("=" * 64)
     for sc in scenarios:
         if "标准" not in sc["label"]: continue

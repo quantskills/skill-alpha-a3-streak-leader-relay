@@ -62,7 +62,7 @@ DEFAULT_CONFIG: dict = {
     "buy_th": 70,
     "watch_th": 50,
     "limit_tol": 0.999,
-    "cost": 0.003, "cost_stress": 0.005,
+    "cost": 0.0010, "cost_stress": 0.0015,  # 万五佣金+印花税 真实费率
 }
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]   # scripts → dev dir → repo root

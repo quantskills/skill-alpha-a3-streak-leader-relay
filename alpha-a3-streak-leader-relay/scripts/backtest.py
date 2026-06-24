@@ -44,8 +44,8 @@ DEFAULT_REPORT_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "
 
 TRADING_DAYS_PER_YEAR = 244
 OOS_MONTHS = 6
-COST_STD = 0.003     # 标准双边
-COST_STRESS = 0.005  # 压力双边
+COST_STD = 0.0010    # 标准双边（万五佣金+印花税 真实费率）
+COST_STRESS = 0.0015 # 压力双边（含滑点）
 
 
 # ============================================================
@@ -310,7 +310,7 @@ def render_markdown(reports: list[dict], cfg_summary: dict) -> str:
     lines.append("- **forward_return** = vwap[t+2] / open[t+1] − 1")
     lines.append("- **不可成交跳过**: t+1 一字板 / 开盘涨停 / 停牌（fillable=False）")
     lines.append("- **样本外 OOS**: 最近 6 个月")
-    lines.append("- **成本**: 当前报告为 **毛收益（未扣双边成本）**，策略层另算双成本 0.30% / 0.50%")
+    lines.append("- **成本**: 当前报告为 **毛收益（未扣双边成本）**，策略层另算双成本 0.10% / 0.15%")
     lines.append("")
 
     for r in reports:
