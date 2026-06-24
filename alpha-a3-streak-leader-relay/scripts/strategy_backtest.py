@@ -227,7 +227,8 @@ def main() -> None:
     for label_panel, panel_part in [("ALL 全样本", panel), ("IS 样本内", is_panel), ("OOS 样本外", oos_panel)]:
         for cost, cost_label in [(COST_STD, "标准 0.30%"), (COST_STRESS, "压力 0.50%")]:
             for gate_on, gate_label in [(False, "组A 纯A3"), (True, "组B 含IC gate")]:
-                with_curve = (label_panel == "ALL 全样本" and cost == COST_STD)
+                # 三个区间 (ALL/IS/OOS) 标准成本下都生成曲线，供 HTML 多维度展示
+                with_curve = (cost == COST_STD)
                 gate_arg = ic_gate_dates if gate_on else None
                 m = run_strategy(panel_part, top_n=args.top_n, cost=cost,
                                  with_curve=with_curve, ic_gate_dates=gate_arg)

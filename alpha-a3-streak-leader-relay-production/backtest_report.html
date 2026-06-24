@@ -3,41 +3,146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alpha-A3 回测报告</title>
+<title>Alpha-A3 连板龙头接力 · 回测报告</title>
 <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
            margin: 0; padding: 32px 24px; background: #f8fafc; color: #1e293b; line-height: 1.6; }
-    .container { max-width: 1280px; margin: 0 auto; }
+    .container { max-width: 1320px; margin: 0 auto; }
     h1 { font-size: 28px; margin: 0 0 8px; color: #0f172a; }
-    h2 { font-size: 22px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; color: #0f172a; }
+    h2 { font-size: 22px; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; color: #0f172a; }
     h3 { font-size: 18px; margin: 20px 0 12px; color: #334155; }
     h4 { font-size: 15px; margin: 16px 0 8px; color: #475569; }
     .header { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white;
               padding: 24px; border-radius: 12px; margin-bottom: 32px; }
     .header h1 { color: white; }
     .header .sub { opacity: 0.85; font-size: 14px; }
-    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-                   gap: 12px; margin: 24px 0; }
-    .metric-card { background: white; padding: 16px; border-radius: 8px;
-                   box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .metric-title { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-    .metric-value { font-size: 22px; font-weight: 700; }
+
+    /* Hero */
+    .hero-banner { background: linear-gradient(135deg, #ecfdf5 0%, #f0f9ff 100%);
+                   border: 2px solid #10b981; border-radius: 12px; padding: 20px;
+                   margin: 24px 0; }
+    .hero-label { font-size: 14px; font-weight: 600; color: #047857;
+                  letter-spacing: 0.5px; margin-bottom: 12px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                   gap: 12px; }
+    .metric-card { background: white; padding: 14px; border-radius: 8px;
+                   box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .metric-title { font-size: 11px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .metric-value { font-size: 24px; font-weight: 700; line-height: 1.2; }
+    .metric-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .metric-primary .metric-value { color: #3b82f6; }
+    .metric-good .metric-value { color: #10b981; }
+    .metric-warn .metric-value { color: #f59e0b; }
+    .metric-muted .metric-value { color: #64748b; }
+
+    /* 诊断条 */
+    .diag-bar { background: #f1f5f9; border-radius: 8px; padding: 16px 20px;
+                margin: 16px 0 24px; cursor: pointer; }
+    .diag-bar summary { font-weight: 600; color: #475569; cursor: pointer; outline: none; }
+    .diag-bar summary::marker { color: #94a3b8; }
+    .diag-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .diag-pill { display: inline-flex; gap: 6px; align-items: center;
+                 background: white; padding: 6px 12px; border-radius: 20px;
+                 font-size: 12px; color: #64748b; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .diag-pill strong { color: #1e293b; font-weight: 600; }
+
     section { background: white; padding: 24px; border-radius: 12px; margin: 24px 0;
               box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
     .hint { color: #64748b; font-size: 13px; margin: 0 0 16px; }
     .meta { color: #64748b; font-size: 13px; }
     code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+    /* Table */
     table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px; }
     th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
     th { background: #f8fafc; font-weight: 600; color: #475569; }
     tr:hover { background: #f8fafc; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* 多组合矩阵 */
+    .matrix-table tr.row-good td { background: linear-gradient(90deg, #ecfdf5 0%, transparent 50%); }
+    .matrix-table tr.row-muted td { background: #fafafa; color: #94a3b8; }
+    .matrix-table .cell-pos { color: #059669; font-weight: 600; }
+    .matrix-table .cell-neg { color: #dc2626; font-weight: 500; }
+
+    /* Chart */
     .chart-container { margin: 24px 0; padding: 16px; background: #fafafa; border-radius: 8px; }
     .chart-container h4 { margin-top: 0; }
-    .spread { background: linear-gradient(90deg, #fef3c7 0%, transparent 100%);
-              padding: 8px 12px; border-radius: 6px; margin: 12px 0; }
+    .chart-note { font-size: 12px; color: #94a3b8; margin: -4px 0 12px; font-style: italic; }
+
+    /* Latest signal cards */
+    .latest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                   gap: 16px; margin-bottom: 24px; }
+    .latest-card { background: linear-gradient(180deg, white 0%, #f8fafc 100%);
+                   border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+    .latest-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .rank-badge { background: #1e293b; color: white; font-size: 12px; font-weight: 700;
+                  padding: 2px 8px; border-radius: 999px; }
+    .signal-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600;
+                    text-transform: uppercase; letter-spacing: 0.5px; }
+    .sig-buy { background: #10b981; color: white; }
+    .sig-watch { background: #f59e0b; color: white; }
+    .sig-hold { background: #64748b; color: white; }
+    .sig-unfillable { background: #ef4444; color: white; }
+    .latest-code { font-size: 13px; color: #64748b; margin-top: 4px; font-family: monospace; }
+    .latest-name { font-size: 18px; font-weight: 600; color: #0f172a; margin: 4px 0; }
+    .latest-score { font-size: 36px; font-weight: 800; color: #3b82f6; margin: 8px 0; }
+    .latest-score small { font-size: 14px; color: #94a3b8; font-weight: 400; }
+    .latest-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+                    font-size: 12px; color: #64748b; }
+    .latest-stats strong { color: #1e293b; }
+
+    details > summary { cursor: pointer; outline: none; }
+    details > summary::marker { color: #94a3b8; }
+
+    /* ===== 因子研判 ===== */
+    .review-section { background: linear-gradient(135deg, #fafbff 0%, #f8fafc 100%);
+                      border-left: 4px solid #3b82f6; }
+    .verdict { display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+               border-radius: 8px; margin: 16px 0; }
+    .verdict-good { background: #ecfdf5; border-left: 4px solid #10b981; }
+    .verdict-warn { background: #fffbeb; border-left: 4px solid #f59e0b; }
+    .verdict-bad { background: #fef2f2; border-left: 4px solid #ef4444; }
+    .verdict-emoji { font-size: 32px; }
+    .verdict-text { font-size: 16px; font-weight: 600; color: #1e293b; flex: 1; }
+    .overall { background: white; padding: 16px; border-radius: 8px; margin: 12px 0 20px;
+               border: 1px solid #e2e8f0; color: #334155; }
+    .overall strong { color: #1e293b; background: #fef3c7; padding: 1px 6px; border-radius: 3px; }
+
+    .findings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+                     gap: 12px; margin: 8px 0 20px; }
+    .finding { padding: 12px 16px; border-radius: 8px; border-left: 3px solid; background: white; }
+    .finding-good { border-color: #10b981; background: #f0fdf4; }
+    .finding-warn { border-color: #f59e0b; background: #fffbeb; }
+    .finding-bad { border-color: #ef4444; background: #fef2f2; }
+    .finding-neutral { border-color: #94a3b8; background: #f8fafc; }
+    .finding-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .finding-text { font-size: 13px; color: #475569; line-height: 1.5; }
+    .finding-text strong { color: #1e293b; }
+
+    .advice-list { list-style: none; padding: 0; margin: 8px 0; }
+    .advice-list li { padding: 8px 12px; background: white; margin: 6px 0; border-radius: 6px;
+                      font-size: 13px; color: #334155; border: 1px solid #e2e8f0; }
+    .advice-icon { display: inline-block; margin-right: 8px; }
+
+    /* ===== 最近 N 日明细 ===== */
+    .recent-wrap { max-height: 600px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .recent-table { font-size: 12px; margin: 0; }
+    .recent-table th { position: sticky; top: 0; z-index: 1; background: #f1f5f9; }
+    .recent-table tr:hover { background: #f8fafc; }
+    .recent-table .ts-code { font-family: monospace; color: #64748b; }
+    .rank-mini { background: #1e293b; color: white; font-size: 11px; font-weight: 600;
+                 padding: 1px 6px; border-radius: 4px; }
+    .signal-mini { font-size: 10px; padding: 1px 6px; border-radius: 3px;
+                   font-weight: 600; text-transform: uppercase; }
+    .cell-pos { color: #059669; font-weight: 600; }
+    .cell-neg { color: #dc2626; font-weight: 600; }
+
+    .daily-pnl-table { font-size: 13px; }
+    .daily-pnl-table th, .daily-pnl-table td { text-align: right; }
+    .daily-pnl-table th:first-child, .daily-pnl-table td:first-child { text-align: left; }
     </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -45,128 +150,1377 @@
 <div class="container">
   <div class="header">
     <h1>Alpha-A3 · 连板龙头接力</h1>
-    <div class="sub">回测可视化报告 · 生成于 2026-06-24T16:24:41</div>
+    <div class="sub">回测可视化报告 · 生成于 2026-06-24T16:57:43</div>
     <div class="sub">parquet 样本: 1978 行 · 722 交易日 · 799 标的</div>
   </div>
 
-  <div class="metric-grid">
-        <div class="metric-card">
-          <div class="metric-title">IC (ALL)</div>
-          <div class="metric-value" style="color:#3b82f6">0.0261</div>
+  
+    <section class="review-section">
+      <h2>🎯 因子研判</h2>
+      <div class="verdict verdict-good">
+        <div class="verdict-emoji">✅</div>
+        <div class="verdict-text">近 6 月 OOS 区分力 + 正收益同时成立，可作为候选发现器使用</div>
+      </div>
+      <p class="overall">A3 是<strong>事件型 T+1 接力因子</strong>，从 A 股 ≥3 板候选池中识别值得接力的龙头。过去 <strong>722</strong> 个交易日累计输出 <strong>1978</strong> 条信号，日均横截面宽度 <strong>2.74</strong>（每日候选 ~3 只），其中 <strong>426</strong> 条 buy 信号。</p>
+      <h3>📌 关键发现</h3>
+      <div class="findings-grid">
+        <div class="finding finding-good">
+          <div class="finding-title">OOS 因子预测力</div>
+          <div class="finding-text">近 6 月 IC=<strong>0.1184</strong>，ICIR=<strong>0.1502</strong>。达学界 ICIR&gt;0.10 的可投资门槛。</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">ICIR (ALL)</div>
-          <div class="metric-value" style="color:#3b82f6">0.0365</div>
+        <div class="finding finding-warn">
+          <div class="finding-title">IS / OOS 分化</div>
+          <div class="finding-text">IS IC=<strong>0.0078</strong> vs OOS IC=<strong>0.1184</strong>，差异 +0.1106。OOS 显著强于 IS — 因子对游资活跃环境敏感，环境一变会失效。</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">IC (OOS)</div>
-          <div class="metric-value" style="color:#6366f1">0.1184</div>
+        <div class="finding finding-good">
+          <div class="finding-title">候选池整体次日均值</div>
+          <div class="finding-text"><strong>+0.038%</strong>（全样本所有 ≥3 板候选）。候选池均值非负，跟进风险可控。</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Q5-Q1 多空 (OOS)</div>
-          <div class="metric-value" style="color:#6366f1">0%</div>
+        <div class="finding finding-good">
+          <div class="finding-title">T+1 可成交率</div>
+          <div class="finding-text"><strong>59.8%</strong>。剩下 40.2% 是高度一字板/停牌，是高度龙头但接力不上。</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">夏普 (ALL)</div>
-          <div class="metric-value" style="color:#64748b">-2.8476</div>
+        <div class="finding finding-warn">
+          <div class="finding-title">成本敏感度</div>
+          <div class="finding-text">标准 0.30% ARR=<strong>+40.9%</strong> → 压力 0.50% ARR=<strong>-13.7%</strong>。⚠️ 仅 0.20% 成本差就翻负 — 实盘费率必须 &lt; 0.30% 双边</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">ARR% (ALL)</div>
-          <div class="metric-value" style="color:#64748b">-99.7759%</div>
+        <div class="finding finding-warn">
+          <div class="finding-title">IC gate 增益</div>
+          <div class="finding-text">OOS 含 IC gate ARR=<strong>-60.9%</strong> vs 纯 A3 ARR=<strong>+40.9%</strong>，差 -101.8%。 gate 反而拖累 — 子因子已内化游资活跃度信息，gate 冗余</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">MDD% (ALL)</div>
-          <div class="metric-value" style="color:#ef4444">-99.9987%</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">夏普 (OOS)</div>
-          <div class="metric-value" style="color:#10b981">0.9601</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">ARR% (OOS)</div>
-          <div class="metric-value" style="color:#10b981">40.8800%</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">胜率 (OOS)</div>
-          <div class="metric-value" style="color:#10b981">48.4%</div>
+        <div class="finding finding-good">
+          <div class="finding-title">近 3 月走势</div>
+          <div class="finding-text"><strong>2026-04</strong> (-20.7%) / <strong>2026-05</strong> (+15.2%) / <strong>2026-06</strong> (+84.3%)。当前环境对 A3 友好</div>
         </div></div>
+      <h3>📋 实操建议</h3>
+      <ul class="advice-list"><li><span class="advice-icon">✅</span>paper trading 跑 1-2 个月活样本验证真实表现</li><li><span class="advice-icon">⚠️</span>实盘费率必须 &lt; 0.30% 双边（印花税 0.1% + 佣金 + 滑点 &lt; 0.2%）</li><li><span class="advice-icon">💡</span>IC gate 当前是冗余约束，直接用纯 A3 + 人工选时即可</li><li><span class="advice-icon">📋</span>每日只入 score≥80 且 fillable=True 的信号；rank=1 一字板要果断放弃</li><li><span class="advice-icon">🛑</span>连续 2 个月 OOS 月度收益 &lt; -10% 时暂停策略 1 个月观察</li><li><span class="advice-icon">⚠️</span>日均候选 2.7 只过窄，建议同时叠 A2/A4 等其他事件因子分散</li></ul>
+    </section>
+    
 
-  <section><h2>📈 图表概览</h2>
+  
+    <div class="hero-banner">
+      <div class="hero-label">🌟 OOS 近 6 个月样本外 · 推荐看这里</div>
+      <div class="metric-grid">
+        <div class="metric-card metric-primary">
+          <div class="metric-title">IC (OOS)</div>
+          <div class="metric-value">0.1184</div>
+          <div class="metric-sub">OOS 因子预测力</div>
+        </div>
+        <div class="metric-card metric-primary">
+          <div class="metric-title">ICIR (OOS)</div>
+          <div class="metric-value">0.1502</div>
+          <div class="metric-sub">目标 > 0.10</div>
+        </div>
+        <div class="metric-card metric-good">
+          <div class="metric-title">ARR% (OOS, 纯A3, 0.30%)</div>
+          <div class="metric-value">40.8800%</div>
+          <div class="metric-sub">近 6 月年化</div>
+        </div>
+        <div class="metric-card metric-good">
+          <div class="metric-title">夏普 (OOS, 纯A3)</div>
+          <div class="metric-value">0.9601</div>
+          <div class="metric-sub">目标 > 0.5</div>
+        </div>
+        <div class="metric-card metric-good">
+          <div class="metric-title">累计% (OOS)</div>
+          <div class="metric-value">10.3323%</div>
+          <div class="metric-sub">近 6 月累计</div>
+        </div>
+        <div class="metric-card metric-good">
+          <div class="metric-title">胜率 (OOS)</div>
+          <div class="metric-value">48.4%</div>
+          <div class="metric-sub">盈利天数占比</div>
+        </div>
+        <div class="metric-card metric-warn">
+          <div class="metric-title">MDD (OOS)</div>
+          <div class="metric-value">-52.1278%</div>
+          <div class="metric-sub">最大回撤</div>
+        </div>
+        <div class="metric-card metric-muted">
+          <div class="metric-title">ARR% (OOS, IC gate)</div>
+          <div class="metric-value">-60.9364%</div>
+          <div class="metric-sub">对照组：含 IC gate</div>
+        </div></div>
+    </div>
+
+    <details class="diag-bar">
+      <summary>📉 诊断维度：ALL 全样本（含因子失效期）— 点击展开</summary>
+      <p class="hint" style="margin:12px 0">A 股 ≥3 板候选池在 2023-2025 中段呈现结构性次日均值负偏，因此 ALL 资金曲线一路下行不代表因子失效，而是该期间不适合做"无脑跟进≥3 板"的策略。OOS 才是因子在游资活跃期的真实表现。</p>
+      <div class="diag-grid"><div class="diag-pill"><span>IC (ALL)</span><strong>0.0261</strong></div><div class="diag-pill"><span>ICIR (ALL)</span><strong>0.0365</strong></div><div class="diag-pill"><span>ARR% (ALL)</span><strong>-99.7759%</strong></div><div class="diag-pill"><span>MDD (ALL)</span><strong>-99.9987%</strong></div><div class="diag-pill"><span>夏普 (ALL)</span><strong>-2.8476</strong></div></div>
+    </details>
+    
+
+  <section><h2>📋 最新交易日信号 · 2026-06-24</h2>
+<div class="latest-grid">
+
+        <div class="latest-card">
+          <div class="latest-header">
+            <span class="rank-badge">#1</span>
+            <span class="signal-badge sig-unfillable">unfillable</span>
+          </div>
+          <div class="latest-code">002674.SZ</div>
+          <div class="latest-name">兴业科技</div>
+          <div class="latest-score">83.9<small>/100</small></div>
+          <div class="latest-stats">
+            <div>连板: <strong>4 板</strong></div>
+            <div>题材龙头: <strong>1.00</strong></div>
+            <div>跟封率: <strong>0.37</strong></div>
+            <div>早封板: <strong>1.00</strong></div>
+            <div>炸板风险: <strong>0.00</strong></div>
+            <div>60日位置: <strong>1.00</strong></div>
+          </div>
+        </div>
+
+        <div class="latest-card">
+          <div class="latest-header">
+            <span class="rank-badge">#2</span>
+            <span class="signal-badge sig-watch">watch</span>
+          </div>
+          <div class="latest-code">605069.SH</div>
+          <div class="latest-name">正和生态</div>
+          <div class="latest-score">62.1<small>/100</small></div>
+          <div class="latest-stats">
+            <div>连板: <strong>3 板</strong></div>
+            <div>题材龙头: <strong>1.00</strong></div>
+            <div>跟封率: <strong>0.37</strong></div>
+            <div>早封板: <strong>0.60</strong></div>
+            <div>炸板风险: <strong>0.08</strong></div>
+            <div>60日位置: <strong>0.67</strong></div>
+          </div>
+        </div>
+
+        <div class="latest-card">
+          <div class="latest-header">
+            <span class="rank-badge">#3</span>
+            <span class="signal-badge sig-watch">watch</span>
+          </div>
+          <div class="latest-code">002167.SZ</div>
+          <div class="latest-name">东方锆业</div>
+          <div class="latest-score">57.1<small>/100</small></div>
+          <div class="latest-stats">
+            <div>连板: <strong>4 板</strong></div>
+            <div>题材龙头: <strong>1.00</strong></div>
+            <div>跟封率: <strong>0.60</strong></div>
+            <div>早封板: <strong>0.05</strong></div>
+            <div>炸板风险: <strong>0.09</strong></div>
+            <div>60日位置: <strong>1.00</strong></div>
+          </div>
+        </div>
+</div>
 
     <div class="chart-container">
-      <h4>💰 资金曲线（标准成本 0.30%，全样本）</h4>
-      <div class="chart-wrap" style="position:relative;height:320px;width:100%;">
-        <canvas id="equityChart"></canvas>
+      <h4>🎯 候选子因子雷达图</h4>
+      <p class="chart-note">外圈 = 子因子强 / 风险低；炸板风险已反转，越外越好</p>
+      <div class="chart-wrap" style="position:relative;height:400px;width:100%;">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </div>
+</section>
+
+  <section><h2>📅 最近 20 个交易日明细</h2>
+<p class="hint">每行 = 一个信号。日期降序，每天最多 3 个 rank。forward_return = T+1 open 进 T+2 vwap 出 的实际毛收益。一字板 unfillable 不计入当日组合 P&L。</p>
+<div class="recent-wrap"><table class="recent-table">
+<tr><th>日期</th><th>Rank</th><th>代码</th><th>名称</th><th>Signal</th><th>Score</th><th>板</th><th>题材龙</th><th>早封板</th><th>fillable</th><th>next_open</th><th>vwap T+2</th><th>forward_return</th></tr>
+
+        <tr>
+          <td>2026-06-24</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">002674.SZ</td>
+          <td><strong>兴业科技</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>83.9</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>—</td>
+          <td>—</td>
+          <td><span style="color:#94a3b8">—</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-24</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">605069.SH</td>
+          <td><strong>正和生态</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>62.1</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.60</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>—</td>
+          <td>—</td>
+          <td><span style="color:#94a3b8">—</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-24</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">002167.SZ</td>
+          <td><strong>东方锆业</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>57.1</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.05</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>—</td>
+          <td>—</td>
+          <td><span style="color:#94a3b8">—</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-23</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600397.SH</td>
+          <td><strong>江钨装备</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>87.2</strong></td>
+          <td>5</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>24.83</td>
+          <td>—</td>
+          <td><span style="color:#94a3b8">—</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-23</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">002674.SZ</td>
+          <td><strong>兴业科技</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>82.7</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>23.83</td>
+          <td>—</td>
+          <td><span style="color:#94a3b8">—</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-23</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">002167.SZ</td>
+          <td><strong>东方锆业</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>80.3</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>19.60</td>
+          <td>—</td>
+          <td><span style="color:#94a3b8">—</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-22</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600353.SH</td>
+          <td><strong>旭光电子</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>89.8</strong></td>
+          <td>5</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>48.74</td>
+          <td>51.45</td>
+          <td><span class="cell-pos">+5.56%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-22</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">600397.SH</td>
+          <td><strong>江钨装备</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>80.6</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.88</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>24.44</td>
+          <td>25.01</td>
+          <td><span class="cell-pos">+2.35%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-22</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">603989.SH</td>
+          <td><strong>艾华集团</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>64.5</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.81</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>47.69</td>
+          <td>46.36</td>
+          <td><span class="cell-neg">-2.79%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-18</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600353.SH</td>
+          <td><strong>旭光电子</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>85.0</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.87</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>46.21</td>
+          <td>47.93</td>
+          <td><span class="cell-pos">+3.72%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-18</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">603989.SH</td>
+          <td><strong>艾华集团</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>71.3</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.62</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>44.88</td>
+          <td>46.07</td>
+          <td><span class="cell-pos">+2.66%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-18</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">002141.SZ</td>
+          <td><strong>贤丰控股</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>69.5</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.74</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>5.18</td>
+          <td>4.77</td>
+          <td><span class="cell-neg">-7.87%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-17</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600110.SH</td>
+          <td><strong>诺德股份</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>86.2</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>17.50</td>
+          <td>17.02</td>
+          <td><span class="cell-neg">-2.72%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-17</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">601636.SH</td>
+          <td><strong>旗滨集团</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>85.9</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>8.59</td>
+          <td>8.30</td>
+          <td><span class="cell-neg">-3.36%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-17</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">600353.SH</td>
+          <td><strong>旭光电子</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>83.5</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>41.50</td>
+          <td>46.21</td>
+          <td><span class="cell-pos">+11.35%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-16</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">605198.SH</td>
+          <td><strong>安德利</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>79.3</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>78.42</td>
+          <td>79.77</td>
+          <td><span class="cell-pos">+1.72%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-16</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">000032.SZ</td>
+          <td><strong>深桑达A</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>67.5</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.32</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>23.21</td>
+          <td>24.88</td>
+          <td><span class="cell-pos">+7.18%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-16</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">301176.SZ</td>
+          <td><strong>逸豪新材</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>60.1</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.77</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>76.26</td>
+          <td>78.11</td>
+          <td><span class="cell-pos">+2.42%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-15</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">000510.SZ</td>
+          <td><strong>新金路</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>82.5</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.99</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>22.00</td>
+          <td>21.96</td>
+          <td><span class="cell-neg">-0.19%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-15</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">601958.SH</td>
+          <td><strong>金钼股份</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>70.9</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.68</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>28.10</td>
+          <td>28.11</td>
+          <td><span class="cell-pos">+0.02%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-15</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">000032.SZ</td>
+          <td><strong>深桑达A</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>46.7</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.15</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>21.47</td>
+          <td>22.74</td>
+          <td><span class="cell-pos">+5.89%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-12</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">603065.SH</td>
+          <td><strong>宿迁联盛</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>82.2</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>13.18</td>
+          <td>14.22</td>
+          <td><span class="cell-pos">+7.88%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-12</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">600500.SH</td>
+          <td><strong>中化国际</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>71.3</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.96</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>7.85</td>
+          <td>9.05</td>
+          <td><span class="cell-pos">+15.31%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-12</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">002971.SZ</td>
+          <td><strong>和远气体</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>48.0</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.43</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>55.76</td>
+          <td>59.55</td>
+          <td><span class="cell-pos">+6.80%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-11</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600500.SH</td>
+          <td><strong>中化国际</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>84.3</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>7.90</td>
+          <td>8.07</td>
+          <td><span class="cell-pos">+2.10%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-11</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">603065.SH</td>
+          <td><strong>宿迁联盛</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>82.6</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>13.60</td>
+          <td>13.21</td>
+          <td><span class="cell-neg">-2.87%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-11</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">002971.SZ</td>
+          <td><strong>和远气体</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>64.4</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>55.00</td>
+          <td>54.79</td>
+          <td><span class="cell-neg">-0.37%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-10</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">002636.SZ</td>
+          <td><strong>金安国纪</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>71.8</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.80</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>77.44</td>
+          <td>89.83</td>
+          <td><span class="cell-pos">+16.01%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-10</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">002354.SZ</td>
+          <td><strong>天娱数科</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>57.8</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.27</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>8.75</td>
+          <td>7.63</td>
+          <td><span class="cell-neg">-12.75%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-09</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">002354.SZ</td>
+          <td><strong>天娱数科</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>52.0</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.58</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>8.28</td>
+          <td>8.27</td>
+          <td><span class="cell-neg">-0.12%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-09</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">002254.SZ</td>
+          <td><strong>泰和新材</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>48.0</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.48</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>18.61</td>
+          <td>18.35</td>
+          <td><span class="cell-neg">-1.42%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-08</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600403.SH</td>
+          <td><strong>大有能源</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>74.4</strong></td>
+          <td>6</td>
+          <td>1.00</td>
+          <td>0.11</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>8.06</td>
+          <td>8.12</td>
+          <td><span class="cell-pos">+0.74%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-08</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">603500.SH</td>
+          <td><strong>祥和实业</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>69.0</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.63</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>13.01</td>
+          <td>12.78</td>
+          <td><span class="cell-neg">-1.78%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-08</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">603135.SH</td>
+          <td><strong>中重科技</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>51.4</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.18</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>15.25</td>
+          <td>14.47</td>
+          <td><span class="cell-neg">-5.10%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-05</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600403.SH</td>
+          <td><strong>大有能源</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>54.0</strong></td>
+          <td>5</td>
+          <td>1.00</td>
+          <td>0.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>8.23</td>
+          <td>8.16</td>
+          <td><span class="cell-neg">-0.85%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-05</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">603135.SH</td>
+          <td><strong>中重科技</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>49.6</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.63</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>14.28</td>
+          <td>15.33</td>
+          <td><span class="cell-pos">+7.34%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-04</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600403.SH</td>
+          <td><strong>大有能源</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>81.2</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>7.40</td>
+          <td>8.75</td>
+          <td><span class="cell-pos">+18.28%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-04</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">600367.SH</td>
+          <td><strong>红星发展</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>67.0</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.59</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>48.65</td>
+          <td>51.96</td>
+          <td><span class="cell-pos">+6.80%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-04</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">600255.SH</td>
+          <td><strong>鑫科材料</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>45.4</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.57</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>4.50</td>
+          <td>4.58</td>
+          <td><span class="cell-pos">+1.86%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-03</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600403.SH</td>
+          <td><strong>大有能源</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>80.3</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>7.40</td>
+          <td>7.89</td>
+          <td><span class="cell-pos">+6.68%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-03</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">603330.SH</td>
+          <td><strong>天洋新材</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>76.2</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>8.55</td>
+          <td>9.51</td>
+          <td><span class="cell-pos">+11.21%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-03</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">600367.SH</td>
+          <td><strong>红星发展</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>73.2</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.99</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>45.24</td>
+          <td>49.88</td>
+          <td><span class="cell-pos">+10.25%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-02</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">603890.SH</td>
+          <td><strong>春秋电子</strong></td>
+          <td><span class="signal-mini sig-unfillable">unfillable</span></td>
+          <td><strong>90.0</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>31.59</td>
+          <td>28.94</td>
+          <td><span class="cell-neg">-8.37%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-02</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">600280.SH</td>
+          <td><strong>中央商场</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>16.0</strong></td>
+          <td>3</td>
+          <td>0.00</td>
+          <td>0.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>3.75</td>
+          <td>3.73</td>
+          <td><span class="cell-neg">-0.46%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-01</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">603011.SH</td>
+          <td><strong>合锻智能</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>76.4</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.30</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>28.23</td>
+          <td>30.16</td>
+          <td><span class="cell-pos">+6.83%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-01</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">000539.SZ</td>
+          <td><strong>粤电力A</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>67.8</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>9.68</td>
+          <td>8.90</td>
+          <td><span class="cell-neg">-8.09%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-06-01</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">002995.SZ</td>
+          <td><strong>天地在线</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>38.6</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>27.43</td>
+          <td>25.03</td>
+          <td><span class="cell-neg">-8.74%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-29</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600726.SH</td>
+          <td><strong>华电能源</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>77.2</strong></td>
+          <td>5</td>
+          <td>1.00</td>
+          <td>0.59</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>10.38</td>
+          <td>9.23</td>
+          <td><span class="cell-neg">-11.04%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-29</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">600162.SH</td>
+          <td><strong>香江控股</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>72.7</strong></td>
+          <td>5</td>
+          <td>1.00</td>
+          <td>0.72</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>2.75</td>
+          <td>3.13</td>
+          <td><span class="cell-pos">+13.91%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-29</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">000539.SZ</td>
+          <td><strong>粤电力A</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>68.9</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.86</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>9.77</td>
+          <td>9.14</td>
+          <td><span class="cell-neg">-6.44%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-28</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600726.SH</td>
+          <td><strong>华电能源</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>80.0</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>1.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>9.75</td>
+          <td>9.76</td>
+          <td><span class="cell-pos">+0.10%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-28</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">000509.SZ</td>
+          <td><strong>华塑控股</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>79.4</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.98</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>6.30</td>
+          <td>4.96</td>
+          <td><span class="cell-neg">-21.29%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-28</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">600162.SH</td>
+          <td><strong>香江控股</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>46.6</strong></td>
+          <td>4</td>
+          <td>1.00</td>
+          <td>0.70</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>2.72</td>
+          <td>2.82</td>
+          <td><span class="cell-pos">+3.62%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-27</td>
+          <td><span class="rank-mini">#1</span></td>
+          <td class="ts-code">600162.SH</td>
+          <td><strong>香江控股</strong></td>
+          <td><span class="signal-mini sig-buy">buy</span></td>
+          <td><strong>78.4</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.62</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>2.47</td>
+          <td>2.75</td>
+          <td><span class="cell-pos">+11.35%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-27</td>
+          <td><span class="rank-mini">#2</span></td>
+          <td class="ts-code">600726.SH</td>
+          <td><strong>华电能源</strong></td>
+          <td><span class="signal-mini sig-watch">watch</span></td>
+          <td><strong>69.9</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.33</td>
+          <td style="color:#94a3b8;font-weight:600">✗</td>
+          <td>9.21</td>
+          <td>10.04</td>
+          <td><span class="cell-pos">+9.04%</span></td>
+        </tr>
+
+        <tr>
+          <td>2026-05-27</td>
+          <td><span class="rank-mini">#3</span></td>
+          <td class="ts-code">000509.SZ</td>
+          <td><strong>华塑控股</strong></td>
+          <td><span class="signal-mini sig-hold">hold</span></td>
+          <td><strong>40.0</strong></td>
+          <td>3</td>
+          <td>1.00</td>
+          <td>0.00</td>
+          <td style="color:#10b981;font-weight:600">✓</td>
+          <td>5.72</td>
+          <td>5.62</td>
+          <td><span class="cell-neg">-1.70%</span></td>
+        </tr>
+</table></div>
+<h3 style="margin-top:24px">📊 当日组合表现汇总</h3>
+<p class="hint">仅统计 fillable=True 的信号；buy 信号等权分仓的当日实际毛收益（未扣成本）</p>
+<table class="daily-pnl-table">
+<tr><th>日期</th><th>信号数</th><th>buy 数</th><th>fillable</th><th>当日 buy 均值</th><th>当日全部均值</th><th>胜率</th></tr>
+
+        <tr>
+          <td><strong>2026-06-24</strong></td>
+          <td>3</td>
+          <td>0</td>
+          <td>0</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td>—</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-23</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>2</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td>—</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-22</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>2</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span class="cell-pos">+1.39%</span></td>
+          <td>50%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-18</strong></td>
+          <td>3</td>
+          <td>2</td>
+          <td>1</td>
+          <td><span class="cell-pos">+2.66%</span></td>
+          <td><span class="cell-pos">+2.66%</span></td>
+          <td>100%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-17</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>3</td>
+          <td><span class="cell-pos">+11.35%</span></td>
+          <td><span class="cell-pos">+1.75%</span></td>
+          <td>33%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-16</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>3</td>
+          <td><span class="cell-pos">+1.72%</span></td>
+          <td><span class="cell-pos">+3.77%</span></td>
+          <td>100%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-15</strong></td>
+          <td>3</td>
+          <td>2</td>
+          <td>3</td>
+          <td><span class="cell-neg">-0.09%</span></td>
+          <td><span class="cell-pos">+1.91%</span></td>
+          <td>67%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-12</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>3</td>
+          <td><span class="cell-pos">+15.31%</span></td>
+          <td><span class="cell-pos">+10.00%</span></td>
+          <td>100%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-11</strong></td>
+          <td>3</td>
+          <td>0</td>
+          <td>2</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span class="cell-pos">+0.86%</span></td>
+          <td>50%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-10</strong></td>
+          <td>2</td>
+          <td>1</td>
+          <td>2</td>
+          <td><span class="cell-pos">+16.01%</span></td>
+          <td><span class="cell-pos">+1.63%</span></td>
+          <td>50%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-09</strong></td>
+          <td>2</td>
+          <td>0</td>
+          <td>2</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span class="cell-neg">-0.77%</span></td>
+          <td>0%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-08</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>3</td>
+          <td><span class="cell-pos">+0.74%</span></td>
+          <td><span class="cell-neg">-2.05%</span></td>
+          <td>33%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-05</strong></td>
+          <td>2</td>
+          <td>0</td>
+          <td>2</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span class="cell-pos">+3.24%</span></td>
+          <td>50%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-04</strong></td>
+          <td>3</td>
+          <td>0</td>
+          <td>3</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span class="cell-pos">+8.98%</span></td>
+          <td>100%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-03</strong></td>
+          <td>3</td>
+          <td>2</td>
+          <td>2</td>
+          <td><span class="cell-pos">+10.25%</span></td>
+          <td><span class="cell-pos">+10.73%</span></td>
+          <td>100%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-02</strong></td>
+          <td>2</td>
+          <td>0</td>
+          <td>2</td>
+          <td><span style="color:#94a3b8">—</span></td>
+          <td><span class="cell-neg">-4.42%</span></td>
+          <td>0%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-06-01</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>3</td>
+          <td><span class="cell-pos">+6.83%</span></td>
+          <td><span class="cell-neg">-3.33%</span></td>
+          <td>33%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-05-29</strong></td>
+          <td>3</td>
+          <td>2</td>
+          <td>2</td>
+          <td><span class="cell-pos">+1.43%</span></td>
+          <td><span class="cell-pos">+1.43%</span></td>
+          <td>50%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-05-28</strong></td>
+          <td>3</td>
+          <td>2</td>
+          <td>2</td>
+          <td><span class="cell-pos">+0.10%</span></td>
+          <td><span class="cell-pos">+1.86%</span></td>
+          <td>100%</td>
+        </tr>
+
+        <tr>
+          <td><strong>2026-05-27</strong></td>
+          <td>3</td>
+          <td>1</td>
+          <td>2</td>
+          <td><span class="cell-pos">+11.35%</span></td>
+          <td><span class="cell-pos">+4.82%</span></td>
+          <td>50%</td>
+        </tr>
+</table>
+</section>
+
+  <section><h2>🌟 OOS 样本外（推荐主视图）</h2>
+<p class="hint">区间：最近 6 个月 · 每日 score≥80 取 top-N · t+1 open 进 t+2 vwap 出 · 双成本 0.30%</p>
+
+    <div class="chart-container">
+      <h4>💰 OOS 资金曲线（纯 A3 vs 含 IC gate 对比）</h4>
+      <p class="chart-note">蓝线 = 每日纯 A3；橙线 = 仅在 60 日 RankIC > 0.02 时下单</p>
+      <div class="chart-wrap" style="position:relative;height:360px;width:100%;">
+        <canvas id="oosEquityChart"></canvas>
       </div>
     </div>
 
     <div class="chart-container">
-      <h4>📉 回撤曲线</h4>
+      <h4>📉 OOS 回撤曲线</h4>
+      
       <div class="chart-wrap" style="position:relative;height:240px;width:100%;">
-        <canvas id="drawdownChart"></canvas>
+        <canvas id="oosDrawdownChart"></canvas>
       </div>
     </div>
 
     <div class="chart-container">
-      <h4>📊 IC / RankIC 时序（每日横截面 IC）</h4>
+      <h4>📅 OOS 月度收益（纯 A3）</h4>
+      
+      <div class="chart-wrap" style="position:relative;height:240px;width:100%;">
+        <canvas id="oosMonthlyChart"></canvas>
+      </div>
+    </div>
+</section>
+<section><h2>📊 因子诊断维度</h2>
+<p class="hint">这里展示因子本身的预测力，与策略层资金曲线无关</p>
+
+    <div class="chart-container">
+      <h4>📈 IC / RankIC 时序（每日横截面）</h4>
+      <p class="chart-note">蓝 = IC（Pearson）；橙 = RankIC（Spearman）。靠近 0 表示当日截面无法区分</p>
       <div class="chart-wrap" style="position:relative;height:280px;width:100%;">
         <canvas id="icChart"></canvas>
       </div>
     </div>
 
     <div class="chart-container">
-      <h4>📅 月度收益柱图</h4>
+      <h4>🪜 按连板高度的 forward_return 均值（来自 parquet）</h4>
+      <p class="chart-note">若全部为负 = ≥3 板候选池整体次日均值是负的（A股结构性事实）</p>
       <div class="chart-wrap" style="position:relative;height:240px;width:100%;">
-        <canvas id="monthlyChart"></canvas>
+        <canvas id="streakFwdChart"></canvas>
       </div>
     </div>
 
     <div class="chart-container">
-      <h4>🪜 分层收益（按 factor_value 等频 5 层）</h4>
+      <h4>🚦 按 signal 类型的 forward_return 均值</h4>
+      <p class="chart-note">buy / watch / hold / unfillable 四档分别的次日实际表现</p>
       <div class="chart-wrap" style="position:relative;height:240px;width:100%;">
-        <canvas id="quintileChart"></canvas>
+        <canvas id="signalFwdChart"></canvas>
       </div>
     </div>
 </section>
 
-  <section><h2>📋 信号 / 分布概览</h2><div class="two-col">
-<div><h4>signal 分布</h4><table><tr><th>类型</th><th>条数</th><th>占比</th></tr>
-<tr><td>unfillable</td><td>887</td><td>44.8%</td></tr>
-<tr><td>watch</td><td>466</td><td>23.6%</td></tr>
-<tr><td>buy</td><td>426</td><td>21.5%</td></tr>
-<tr><td>hold</td><td>199</td><td>10.1%</td></tr>
-</table></div>
-<div><h4>连板高度分布</h4><table><tr><th>板数</th><th>条数</th></tr>
-<tr><td>3 板</td><td>808</td></tr>
-<tr><td>4 板</td><td>485</td></tr>
-<tr><td>5 板</td><td>270</td></tr>
-<tr><td>6 板</td><td>146</td></tr>
-<tr><td>7 板</td><td>89</td></tr>
-<tr><td>8 板</td><td>58</td></tr>
-<tr><td>9 板</td><td>34</td></tr>
-<tr><td>10 板</td><td>22</td></tr>
-<tr><td>11 板</td><td>19</td></tr>
-<tr><td>12 板</td><td>13</td></tr>
-<tr><td>13 板</td><td>10</td></tr>
-<tr><td>14 板</td><td>4</td></tr>
-<tr><td>15 板</td><td>12</td></tr>
-<tr><td>16 板</td><td>1</td></tr>
-<tr><td>17 板</td><td>1</td></tr>
-<tr><td>18 板</td><td>6</td></tr>
-</table></div>
-</div>
-<h3>子项均值（全样本）</h3><table>
-<tr><th>子项</th><th>均值</th><th>标准差</th><th>非空率</th></tr>
-<tr><td>concept_leader_score</td><td>0.9718</td><td>0.1616</td><td>100.0%</td></tr>
-<tr><td>early_seal_score</td><td>0.8198</td><td>0.3098</td><td>100.0%</td></tr>
-<tr><td>blow_up_proxy</td><td>0.0339</td><td>0.0437</td><td>100.0%</td></tr>
-<tr><td>position_60d</td><td>0.9571</td><td>0.1312</td><td>100.0%</td></tr>
-<tr><td>lhb_hotmoney</td><td>22832161113.7904</td><td>160367177112.0761</td><td>100.0%</td></tr>
+  <section><h2>🎯 多组合矩阵</h2>
+<p class="hint">3 区间 × 2 组 × 2 成本 共 12 个组合。绿色 = 正向，红色 = 负向，灰色 = 全样本含因子失效期</p>
+<table class="matrix-table">
+<tr><th>区间</th><th>组合</th><th>成本</th><th>信号数</th><th>胜率</th><th>夏普</th><th>ARR%</th><th>累计%</th><th>MDD%</th></tr>
+<tr class="row-good"><td><strong>🌟 OOS 样本外</strong></td><td>纯 A3</td><td>标准 0.30%</td><td>91</td><td>48.4%</td><td>0.9601</td><td class="cell-pos">40.8800%</td><td class="cell-pos">10.3323%</td><td>-52.1278%</td></tr>
+<tr class="row-neutral"><td><strong>🌟 OOS 样本外</strong></td><td>纯 A3</td><td>压力 0.50%</td><td>91</td><td>48.4%</td><td>0.6293</td><td class="cell-neg">-13.6909%</td><td class="cell-neg">-4.1360%</td><td>-54.1040%</td></tr>
+<tr class="row-neutral"><td><strong>🌟 OOS 样本外</strong></td><td>含 IC gate</td><td>标准 0.30%</td><td>74</td><td>47.3%</td><td>0.0731</td><td class="cell-neg">-60.9364%</td><td class="cell-neg">-19.0939%</td><td>-51.2055%</td></tr>
+<tr class="row-neutral"><td><strong>🌟 OOS 样本外</strong></td><td>含 IC gate</td><td>压力 0.50%</td><td>74</td><td>47.3%</td><td>-0.2631</td><td class="cell-neg">-76.1288%</td><td class="cell-neg">-27.5953%</td><td>-52.2462%</td></tr>
+<tr class="row-muted"><td><strong>IS 样本内</strong></td><td>纯 A3</td><td>标准 0.30%</td><td>471</td><td>39.9%</td><td>-3.5578</td><td class="cell-neg">-99.9398%</td><td class="cell-neg">-99.9970%</td><td>-99.9986%</td></tr>
+<tr class="row-muted"><td><strong>IS 样本内</strong></td><td>纯 A3</td><td>压力 0.50%</td><td>471</td><td>39.7%</td><td>-3.8520</td><td class="cell-neg">-99.9637%</td><td class="cell-neg">-99.9985%</td><td>-99.9993%</td></tr>
+<tr class="row-muted"><td><strong>IS 样本内</strong></td><td>含 IC gate</td><td>标准 0.30%</td><td>187</td><td>44.4%</td><td>-1.5727</td><td class="cell-neg">-97.6004%</td><td class="cell-neg">-87.3011%</td><td>-94.2150%</td></tr>
+<tr class="row-muted"><td><strong>IS 样本内</strong></td><td>含 IC gate</td><td>压力 0.50%</td><td>187</td><td>44.4%</td><td>-1.8850</td><td class="cell-neg">-98.5426%</td><td class="cell-neg">-90.3629%</td><td>-95.4735%</td></tr>
+<tr class="row-muted"><td><strong>ALL 全样本</strong></td><td>纯 A3</td><td>标准 0.30%</td><td>562</td><td>41.3%</td><td>-2.8476</td><td class="cell-neg">-99.7759%</td><td class="cell-neg">-99.9967%</td><td>-99.9987%</td></tr>
+<tr class="row-muted"><td><strong>ALL 全样本</strong></td><td>纯 A3</td><td>压力 0.50%</td><td>562</td><td>41.1%</td><td>-3.1457</td><td class="cell-neg">-99.8646%</td><td class="cell-neg">-99.9986%</td><td>-99.9994%</td></tr>
+<tr class="row-muted"><td><strong>ALL 全样本</strong></td><td>含 IC gate</td><td>标准 0.30%</td><td>261</td><td>45.2%</td><td>-1.1217</td><td class="cell-neg">-94.6189%</td><td class="cell-neg">-89.7258%</td><td>-94.5342%</td></tr>
+<tr class="row-muted"><td><strong>ALL 全样本</strong></td><td>含 IC gate</td><td>压力 0.50%</td><td>261</td><td>45.2%</td><td>-1.4408</td><td class="cell-neg">-96.7260%</td><td class="cell-neg">-93.0223%</td><td>-95.9333%</td></tr>
 </table>
 </section>
 
-  <section><h2>📊 因子检验</h2>
-<p class="hint">评估口径：<code>forward_return = vwap[t+2] / open[t+1] − 1</code> · 不可成交跳过：t+1 一字板 / 开盘涨停 / 停牌</p>
+  <section><details><summary><h2 style="display:inline-block;margin:0">📉 ALL 全样本诊断（点击展开）</h2></summary>
+<p class="hint" style="margin-top:16px">⚠️ 这个视图包含 2023-06 ~ 2025-12 的因子失效期，不代表当前因子能力。仅用于诊断"如果无脑跟进≥3 板会怎样"。</p>
+
+    <div class="chart-container">
+      <h4>💸 ALL 全样本资金曲线（诊断）</h4>
+      
+      <div class="chart-wrap" style="position:relative;height:240px;width:100%;">
+        <canvas id="allEquityChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4>📅 ALL 月度收益（诊断 — 看哪几个月赚 vs 亏）</h4>
+      
+      <div class="chart-wrap" style="position:relative;height:240px;width:100%;">
+        <canvas id="allMonthlyChart"></canvas>
+      </div>
+    </div>
+</details></section>
+
+  <section><details><summary><h2 style="display:inline-block;margin:0">📊 因子检验明细（点击展开）</h2></summary>
+<p class="hint" style="margin-top:16px">评估口径：<code>forward_return = vwap[t+2] / open[t+1] − 1</code></p>
 <h3>ALL（全样本，全A）</h3>
 <p class="meta">区间 2023-06-26 ~ 2026-06-22 · 样本数 1972 · 平均横截面宽度 2.74</p>
 <div class="two-col">
@@ -230,25 +1584,46 @@
 <tr><td>换手率</td><td>0.7161</td></tr>
 </table></div>
 </div>
-</section>
+</details></section>
 
-  <section><h2>💰 策略回测</h2>
-<p class="hint">每日 score≥80 取 top-N 等权分仓 · t+1 open 进 t+2 vwap 出 · 双成本扣除</p>
-<table>
-<tr><th>区间</th><th>成本</th><th>n</th><th>胜率</th><th>赔率</th><th>夏普</th><th>ARR%</th><th>MDD%</th><th>累计%</th><th>换手</th></tr>
-<tr><td>组A 纯A3</td><td>ALL 全样本</td><td>562</td><td>41.28%</td><td>0.9180</td><td>-2.8476</td><td>-99.7759%</td><td>-99.9987%</td><td>-99.9967%</td><td>0.9066</td></tr>
-<tr><td>组B 含IC gate</td><td>ALL 全样本</td><td>261</td><td>45.21%</td><td>1.0236</td><td>-1.1217</td><td>-94.6189%</td><td>-94.5342%</td><td>-89.7258%</td><td>0.9234</td></tr>
-<tr><td>组A 纯A3</td><td>ALL 全样本</td><td>562</td><td>41.10%</td><td>0.8864</td><td>-3.1457</td><td>-99.8646%</td><td>-99.9994%</td><td>-99.9986%</td><td>0.9066</td></tr>
-<tr><td>组B 含IC gate</td><td>ALL 全样本</td><td>261</td><td>45.21%</td><td>0.9775</td><td>-1.4408</td><td>-96.7260%</td><td>-95.9333%</td><td>-93.0223%</td><td>0.9234</td></tr>
-<tr><td>组A 纯A3</td><td>IS 样本内</td><td>471</td><td>39.92%</td><td>0.8889</td><td>-3.5578</td><td>-99.9398%</td><td>-99.9986%</td><td>-99.9970%</td><td>0.9192</td></tr>
-<tr><td>组B 含IC gate</td><td>IS 样本内</td><td>187</td><td>44.39%</td><td>1.0071</td><td>-1.5727</td><td>-97.6004%</td><td>-94.2150%</td><td>-87.3011%</td><td>0.9466</td></tr>
-<tr><td>组A 纯A3</td><td>IS 样本内</td><td>471</td><td>39.70%</td><td>0.8602</td><td>-3.8520</td><td>-99.9637%</td><td>-99.9993%</td><td>-99.9985%</td><td>0.9192</td></tr>
-<tr><td>组B 含IC gate</td><td>IS 样本内</td><td>187</td><td>44.39%</td><td>0.9621</td><td>-1.8850</td><td>-98.5426%</td><td>-95.4735%</td><td>-90.3629%</td><td>0.9466</td></tr>
-<tr><td>组A 纯A3</td><td>OOS 样本外</td><td>91</td><td>48.35%</td><td>1.1507</td><td>0.9601</td><td>40.8800%</td><td>-52.1278%</td><td>10.3323%</td><td>0.8430</td></tr>
-<tr><td>组B 含IC gate</td><td>OOS 样本外</td><td>74</td><td>47.30%</td><td>1.0698</td><td>0.0731</td><td>-60.9364%</td><td>-51.2055%</td><td>-19.0939%</td><td>0.8642</td></tr>
-<tr><td>组A 纯A3</td><td>OOS 样本外</td><td>91</td><td>48.35%</td><td>1.0970</td><td>0.6293</td><td>-13.6909%</td><td>-54.1040%</td><td>-4.1360%</td><td>0.8430</td></tr>
-<tr><td>组B 含IC gate</td><td>OOS 样本外</td><td>74</td><td>47.30%</td><td>1.0207</td><td>-0.2631</td><td>-76.1288%</td><td>-52.2462%</td><td>-27.5953%</td><td>0.8642</td></tr>
-</table></section>
+  <section><details><summary><h2 style="display:inline-block;margin:0">🔬 数据透明度（点击展开）</h2></summary>
+<div class="two-col" style="margin-top:16px">
+<div><h4>signal 分布</h4><table><tr><th>类型</th><th>条数</th><th>占比</th></tr>
+<tr><td>unfillable</td><td>887</td><td>44.8%</td></tr>
+<tr><td>watch</td><td>466</td><td>23.6%</td></tr>
+<tr><td>buy</td><td>426</td><td>21.5%</td></tr>
+<tr><td>hold</td><td>199</td><td>10.1%</td></tr>
+</table></div>
+<div><h4>连板高度分布</h4><table><tr><th>板数</th><th>条数</th></tr>
+<tr><td>3 板</td><td>808</td></tr>
+<tr><td>4 板</td><td>485</td></tr>
+<tr><td>5 板</td><td>270</td></tr>
+<tr><td>6 板</td><td>146</td></tr>
+<tr><td>7 板</td><td>89</td></tr>
+<tr><td>8 板</td><td>58</td></tr>
+<tr><td>9 板</td><td>34</td></tr>
+<tr><td>10 板</td><td>22</td></tr>
+<tr><td>11 板</td><td>19</td></tr>
+<tr><td>12 板</td><td>13</td></tr>
+<tr><td>13 板</td><td>10</td></tr>
+<tr><td>14 板</td><td>4</td></tr>
+<tr><td>15 板</td><td>12</td></tr>
+<tr><td>16 板</td><td>1</td></tr>
+<tr><td>17 板</td><td>1</td></tr>
+<tr><td>18 板</td><td>6</td></tr>
+</table></div>
+</div>
+<h4 style="margin-top:16px">子项统计（全样本）</h4><table>
+<tr><th>子项</th><th>均值</th><th>标准差</th><th>非空率</th></tr>
+<tr><td>concept_leader_score</td><td>0.9718</td><td>0.1616</td><td>100.0%</td></tr>
+<tr><td>concept_followers_rate</td><td>0.4694</td><td>0.1833</td><td>100.0%</td></tr>
+<tr><td>early_seal_score</td><td>0.8198</td><td>0.3098</td><td>100.0%</td></tr>
+<tr><td>seal_strength_proxy</td><td>-9.5363</td><td>11.4124</td><td>100.0%</td></tr>
+<tr><td>blow_up_proxy</td><td>0.0339</td><td>0.0437</td><td>100.0%</td></tr>
+<tr><td>position_60d</td><td>0.9571</td><td>0.1312</td><td>100.0%</td></tr>
+<tr><td>lhb_hotmoney</td><td>22832161113.7904</td><td>160367177112.0761</td><td>100.0%</td></tr>
+</table>
+</details></section>
 
   <section style="text-align:center; color:#94a3b8; font-size:12px;">
     <p>Alpha-A3 连板龙头接力因子 · 量枢院 · 2026</p>
@@ -256,49 +1631,95 @@
 </div>
 <script>
 
-              new Chart(document.getElementById('equityChart').getContext('2d'), {
+              new Chart(document.getElementById('oosEquityChart').getContext('2d'), {
                 type:'line',
-                data:{labels:["2023-06-26", "2023-06-29", "2023-06-30", "2023-07-05", "2023-07-11", "2023-07-13", "2023-07-14", "2023-07-17", "2023-07-25", "2023-07-26", "2023-08-01", "2023-08-07", "2023-08-10", "2023-08-18", "2023-08-22", "2023-08-23", "2023-08-24", "2023-08-28", "2023-08-30", "2023-09-11", "2023-09-12", "2023-09-18", "2023-09-19", "2023-09-27", "2023-09-28", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-16", "2023-10-17", "2023-10-19", "2023-10-25", "2023-10-26", "2023-10-27", "2023-11-02", "2023-11-07", "2023-11-08", "2023-11-10", "2023-11-14", "2023-11-15", "2023-11-16", "2023-11-17", "2023-11-20", "2023-11-21", "2023-11-23", "2023-11-27", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-18", "2023-12-20", "2023-12-22", "2023-12-25", "2023-12-27", "2023-12-29", "2024-01-02", "2024-01-03", "2024-01-05", "2024-01-08", "2024-01-10", "2024-01-11", "2024-01-12", "2024-01-15", "2024-01-16", "2024-01-17", "2024-01-25", "2024-01-26", "2024-01-29", "2024-01-30", "2024-02-07", "2024-02-08", "2024-02-19", "2024-02-20", "2024-02-23", "2024-02-26", "2024-02-27", "2024-02-28", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-13", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-26", "2024-03-27", "2024-04-02", "2024-04-03", "2024-04-08", "2024-04-09", "2024-04-12", "2024-04-15", "2024-04-18", "2024-04-19", "2024-04-23", "2024-04-25", "2024-04-26", "2024-04-30", "2024-05-06", "2024-05-08", "2024-05-09", "2024-05-10", "2024-05-13", "2024-05-14", "2024-05-16", "2024-05-20", "2024-05-22", "2024-05-23", "2024-05-29", "2024-06-03", "2024-06-07", "2024-06-13", "2024-06-14", "2024-06-18", "2024-06-19", "2024-06-21", "2024-06-24", "2024-06-27", "2024-07-01", "2024-07-02", "2024-07-03", "2024-07-04", "2024-07-05", "2024-07-11", "2024-07-12", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-23", "2024-07-25", "2024-07-26", "2024-07-29", "2024-07-30", "2024-08-01", "2024-08-02", "2024-08-09", "2024-08-14", "2024-08-16", "2024-08-20", "2024-08-26", "2024-08-29", "2024-08-30", "2024-09-04", "2024-09-05", "2024-09-09", "2024-09-13", "2024-09-23", "2024-09-25", "2024-10-14", "2024-10-15", "2024-10-17", "2024-10-22", "2024-10-23", "2024-10-29", "2024-10-31", "2024-11-01", "2024-11-06", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-18", "2024-11-21", "2024-11-25", "2024-11-26", "2024-11-28", "2024-12-02", "2024-12-03", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-26", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-09", "2025-01-10", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-20", "2025-01-21", "2025-01-22", "2025-02-06", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-17", "2025-02-18", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-12", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-31", "2025-04-03", "2025-04-08", "2025-04-09", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-21", "2025-04-23", "2025-04-24", "2025-04-28", "2025-04-30", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-27", "2025-05-29", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-07", "2025-07-08", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-30", "2025-07-31", "2025-08-07", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-25", "2025-08-27", "2025-09-09", "2025-09-12", "2025-09-16", "2025-09-18", "2025-09-24", "2025-10-10", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-28", "2025-10-29", "2025-10-30", "2025-11-04", "2025-11-06", "2025-11-07", "2025-11-12", "2025-11-13", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-26", "2025-12-02", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-23", "2025-12-26", "2025-12-29", "2026-01-05", "2026-01-07", "2026-01-08", "2026-01-14", "2026-01-22", "2026-01-29", "2026-02-03", "2026-02-04", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-06", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-03", "2026-04-08", "2026-04-09", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-21", "2026-05-22", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"],
-                  datasets:[{label:'资金倍数', data:[1.098179, 1.103036, 0.967582, 1.07186, 0.876641, 0.885141, 0.824879, 0.775848, 0.724232, 0.752581, 0.681994, 0.627073, 0.682675, 0.766616, 0.712108, 0.793166, 0.683601, 0.593894, 0.504334, 0.469718, 0.461739, 0.419133, 0.388372, 0.368226, 0.3655, 0.353418, 0.347541, 0.394033, 0.37166, 0.319676, 0.371148, 0.367593, 0.286643, 0.283766, 0.286697, 0.253656, 0.244584, 0.222833, 0.202803, 0.167304, 0.187389, 0.233404, 0.220567, 0.195992, 0.155359, 0.129198, 0.147815, 0.14863, 0.136495, 0.159421, 0.190846, 0.199421, 0.187288, 0.164509, 0.132846, 0.122491, 0.123985, 0.093372, 0.09746, 0.106954, 0.100125, 0.092229, 0.081827, 0.092311, 0.086589, 0.077114, 0.07048, 0.083583, 0.082142, 0.088351, 0.097758, 0.084861, 0.066275, 0.061134, 0.048173, 0.049955, 0.049504, 0.043814, 0.049362, 0.047458, 0.045541, 0.036805, 0.036733, 0.035374, 0.031423, 0.032387, 0.036443, 0.031994, 0.035398, 0.03444, 0.030224, 0.027097, 0.025376, 0.022877, 0.019668, 0.017646, 0.019462, 0.021367, 0.017827, 0.014375, 0.014084, 0.012637, 0.016942, 0.013344, 0.012506, 0.012719, 0.012155, 0.012295, 0.01199, 0.010195, 0.009022, 0.007192, 0.007868, 0.0073, 0.006062, 0.005748, 0.004613, 0.004736, 0.005318, 0.00442, 0.004576, 0.004954, 0.0048, 0.00415, 0.003407, 0.003383, 0.002589, 0.002075, 0.001897, 0.001996, 0.001792, 0.001463, 0.001519, 0.001408, 0.001481, 0.001293, 0.001331, 0.001065, 0.001156, 0.001391, 0.001207, 0.001112, 0.00117, 0.001097, 0.000903, 0.000814, 0.000729, 0.000801, 0.000843, 0.000819, 0.000803, 0.000863, 0.000837, 0.000715, 0.00056, 0.000508, 0.000597, 0.000483, 0.00056, 0.000643, 0.000657, 0.000753, 0.000854, 0.000795, 0.000818, 0.000835, 0.0008, 0.000725, 0.000759, 0.000816, 0.000927, 0.000977, 0.001013, 0.000827, 0.000955, 0.001095, 0.000815, 0.000813, 0.000763, 0.000774, 0.000823, 0.00071, 0.000644, 0.000533, 0.000535, 0.000415, 0.000384, 0.00037, 0.000314, 0.000254, 0.000271, 0.000257, 0.000217, 0.000173, 0.000143, 0.000147, 0.000141, 0.000125, 0.000108, 0.000105, 0.000111, 9.6e-05, 0.000106, 0.000104, 9.4e-05, 0.000112, 0.000107, 0.000121, 0.000113, 0.000105, 0.000107, 0.000121, 0.000135, 0.000131, 0.000117, 0.000112, 0.0001, 9.2e-05, 9.3e-05, 0.000104, 0.0001, 0.000113, 0.000126, 0.000111, 0.0001, 0.000107, 0.000114, 0.000116, 0.000104, 0.000104, 0.0001, 9.8e-05, 0.000102, 0.000107, 8.7e-05, 7.9e-05, 8.6e-05, 8.2e-05, 8.8e-05, 9e-05, 9.5e-05, 7.5e-05, 6.7e-05, 6.9e-05, 6.7e-05, 6.1e-05, 6.8e-05, 7.6e-05, 8.2e-05, 8.8e-05, 8.2e-05, 6.8e-05, 6.2e-05, 5.4e-05, 4.8e-05, 4.6e-05, 4.1e-05, 4.2e-05, 4.3e-05, 4.8e-05, 5.2e-05, 5.3e-05, 5e-05, 5e-05, 5e-05, 5e-05, 5e-05, 4.8e-05, 4.6e-05, 5.4e-05, 5e-05, 5e-05, 4.6e-05, 4.3e-05, 4.6e-05, 4.3e-05, 4.8e-05, 4.1e-05, 4.2e-05, 4.6e-05, 4.9e-05, 4.2e-05, 3.8e-05, 3.3e-05, 3.4e-05, 3.8e-05, 4.1e-05, 3.8e-05, 3.3e-05, 2.8e-05, 2.9e-05, 2.3e-05, 2.1e-05, 2.1e-05, 1.9e-05, 1.8e-05, 1.7e-05, 2e-05, 1.8e-05, 1.8e-05, 1.8e-05, 1.9e-05, 1.8e-05, 2.1e-05, 2e-05, 2.3e-05, 2e-05, 2e-05, 2.2e-05, 2e-05, 1.9e-05, 2.2e-05, 2e-05, 2.3e-05, 2.4e-05, 2.2e-05, 2e-05, 2.3e-05, 2.1e-05, 2e-05, 2.1e-05, 2.4e-05, 2.3e-05, 1.9e-05, 1.7e-05, 1.7e-05, 1.7e-05, 2.1e-05, 1.8e-05, 1.6e-05, 1.5e-05, 1.7e-05, 1.9e-05, 2e-05, 2.1e-05, 2e-05, 2.3e-05, 2.4e-05, 2.4e-05, 2.4e-05, 2.5e-05, 2.7e-05, 3e-05, 3e-05, 3e-05, 2.9e-05, 3.1e-05, 3e-05, 2.6e-05, 2.3e-05, 2e-05, 1.8e-05, 1.6e-05, 1.8e-05, 1.8e-05, 1.6e-05, 1.6e-05, 1.5e-05, 1.7e-05, 2e-05, 2e-05, 2.2e-05, 2.2e-05, 2.2e-05, 2.4e-05, 2e-05, 2.3e-05, 2.1e-05, 2.4e-05, 2.5e-05, 2.4e-05, 2.2e-05, 1.9e-05, 2.1e-05, 2.2e-05, 2.1e-05, 1.8e-05, 1.8e-05, 1.8e-05, 2e-05, 2.3e-05, 2.1e-05, 2.1e-05, 2.1e-05, 1.8e-05, 1.8e-05, 1.7e-05, 1.5e-05, 1.6e-05, 1.7e-05, 1.8e-05, 2e-05, 2.3e-05, 1.9e-05, 1.7e-05, 1.8e-05, 1.6e-05, 1.8e-05, 1.8e-05, 1.8e-05, 1.9e-05, 1.7e-05, 1.9e-05, 2.3e-05, 2.3e-05, 2.6e-05, 2.7e-05, 3e-05, 3e-05, 3e-05, 3e-05, 3.1e-05, 3.3e-05], borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.1)', borderWidth:2, pointRadius:0, tension:0.1, fill:true}]},
+                data:{labels:["2025-12-23", "2025-12-26", "2025-12-29", "2026-01-05", "2026-01-07", "2026-01-08", "2026-01-14", "2026-01-22", "2026-01-29", "2026-02-03", "2026-02-04", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-06", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-03", "2026-04-08", "2026-04-09", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-21", "2026-05-22", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"], datasets:[{"label": "\u7eaf A3", "data": [1.01412, 1.010619, 0.963709, 1.041383, 0.995078, 0.885839, 0.770971, 0.669483, 0.600379, 0.544846, 0.595101, 0.594767, 0.541526, 0.53129, 0.498533, 0.555951, 0.660725, 0.689488, 0.749877, 0.733164, 0.738565, 0.82185, 0.659338, 0.784059, 0.699171, 0.816619, 0.830714, 0.804013, 0.739009, 0.655852, 0.704789, 0.749887, 0.69705, 0.591163, 0.603826, 0.601851, 0.685946, 0.777691, 0.714893, 0.693281, 0.719825, 0.614553, 0.602291, 0.560593, 0.519784, 0.529405, 0.56532, 0.622904, 0.676128, 0.765694, 0.6334, 0.57449, 0.591107, 0.534092, 0.593114, 0.591905, 0.598614, 0.63768, 0.582368, 0.643114, 0.758732, 0.762098, 0.881791, 0.897674, 0.999098, 0.99524, 1.009327, 1.024008, 1.048177, 1.103323], "borderColor": "#3b82f6", "backgroundColor": "rgba(59,130,246,0.1)", "borderWidth": 2, "pointRadius": 0, "tension": 0.1, "fill": true}, {"label": "\u542b IC gate", "data": [1.01412, 1.010619, 0.963709, 1.041383, 0.995078, 0.885839, 0.770971, 0.669483, 0.600379, 0.544846, 0.595101, 0.594767, 0.541526, null, 0.508138, 0.566662, 0.673454, 0.702771, 0.764324, 0.747289, 0.752795, 0.837684, 0.672041, null, 0.59928, 0.699948, 0.71203, 0.689144, 0.633427, 0.56215, 0.604096, null, null, null, 0.617035, 0.615017, 0.700952, 0.794703, 0.730532, 0.708447, 0.735571, 0.627997, 0.615466, null, 0.570662, 0.581224, 0.620656, 0.683876, 0.74231, 0.840642, 0.695399, 0.630723, null, 0.569886, null, null, 0.576346, 0.613958, null, 0.677999, null, 0.681007, null, 0.693273, 0.771603, 0.768623, null, null, null, 0.809061], "borderColor": "#f59e0b", "backgroundColor": "rgba(245,158,11,0.05)", "borderWidth": 2, "pointRadius": 0, "tension": 0.1, "fill": false, "spanGaps": true}]},
                 options:{responsive:true,maintainAspectRatio:false,animation:false,
-                  scales:{x:{ticks:{maxTicksLimit:12,autoSkip:true}}, y:{title:{display:true,text:'累计资金倍数'}}},
-                  plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}}}
+                  scales:{x:{ticks:{maxTicksLimit:10,autoSkip:true}},
+                    y:{title:{display:true,text:'资金倍数（初始 1.0）'}}},
+                  plugins:{legend:{display:true,position:'top'},tooltip:{mode:'index',intersect:false}}}
               });
 
-              new Chart(document.getElementById('drawdownChart').getContext('2d'), {
+              new Chart(document.getElementById('oosDrawdownChart').getContext('2d'), {
                 type:'line',
-                data:{labels:["2023-06-26", "2023-06-29", "2023-06-30", "2023-07-05", "2023-07-11", "2023-07-13", "2023-07-14", "2023-07-17", "2023-07-25", "2023-07-26", "2023-08-01", "2023-08-07", "2023-08-10", "2023-08-18", "2023-08-22", "2023-08-23", "2023-08-24", "2023-08-28", "2023-08-30", "2023-09-11", "2023-09-12", "2023-09-18", "2023-09-19", "2023-09-27", "2023-09-28", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-16", "2023-10-17", "2023-10-19", "2023-10-25", "2023-10-26", "2023-10-27", "2023-11-02", "2023-11-07", "2023-11-08", "2023-11-10", "2023-11-14", "2023-11-15", "2023-11-16", "2023-11-17", "2023-11-20", "2023-11-21", "2023-11-23", "2023-11-27", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-18", "2023-12-20", "2023-12-22", "2023-12-25", "2023-12-27", "2023-12-29", "2024-01-02", "2024-01-03", "2024-01-05", "2024-01-08", "2024-01-10", "2024-01-11", "2024-01-12", "2024-01-15", "2024-01-16", "2024-01-17", "2024-01-25", "2024-01-26", "2024-01-29", "2024-01-30", "2024-02-07", "2024-02-08", "2024-02-19", "2024-02-20", "2024-02-23", "2024-02-26", "2024-02-27", "2024-02-28", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-13", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-26", "2024-03-27", "2024-04-02", "2024-04-03", "2024-04-08", "2024-04-09", "2024-04-12", "2024-04-15", "2024-04-18", "2024-04-19", "2024-04-23", "2024-04-25", "2024-04-26", "2024-04-30", "2024-05-06", "2024-05-08", "2024-05-09", "2024-05-10", "2024-05-13", "2024-05-14", "2024-05-16", "2024-05-20", "2024-05-22", "2024-05-23", "2024-05-29", "2024-06-03", "2024-06-07", "2024-06-13", "2024-06-14", "2024-06-18", "2024-06-19", "2024-06-21", "2024-06-24", "2024-06-27", "2024-07-01", "2024-07-02", "2024-07-03", "2024-07-04", "2024-07-05", "2024-07-11", "2024-07-12", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-23", "2024-07-25", "2024-07-26", "2024-07-29", "2024-07-30", "2024-08-01", "2024-08-02", "2024-08-09", "2024-08-14", "2024-08-16", "2024-08-20", "2024-08-26", "2024-08-29", "2024-08-30", "2024-09-04", "2024-09-05", "2024-09-09", "2024-09-13", "2024-09-23", "2024-09-25", "2024-10-14", "2024-10-15", "2024-10-17", "2024-10-22", "2024-10-23", "2024-10-29", "2024-10-31", "2024-11-01", "2024-11-06", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-18", "2024-11-21", "2024-11-25", "2024-11-26", "2024-11-28", "2024-12-02", "2024-12-03", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-26", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-09", "2025-01-10", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-20", "2025-01-21", "2025-01-22", "2025-02-06", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-17", "2025-02-18", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-12", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-31", "2025-04-03", "2025-04-08", "2025-04-09", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-21", "2025-04-23", "2025-04-24", "2025-04-28", "2025-04-30", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-27", "2025-05-29", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-07", "2025-07-08", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-30", "2025-07-31", "2025-08-07", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-25", "2025-08-27", "2025-09-09", "2025-09-12", "2025-09-16", "2025-09-18", "2025-09-24", "2025-10-10", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-28", "2025-10-29", "2025-10-30", "2025-11-04", "2025-11-06", "2025-11-07", "2025-11-12", "2025-11-13", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-26", "2025-12-02", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-23", "2025-12-26", "2025-12-29", "2026-01-05", "2026-01-07", "2026-01-08", "2026-01-14", "2026-01-22", "2026-01-29", "2026-02-03", "2026-02-04", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-06", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-03", "2026-04-08", "2026-04-09", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-21", "2026-05-22", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"],
-                  datasets:[{label:'回撤 %', data:[0.0, 0.0, -12.2801, -2.8264, -20.5247, -19.7541, -25.2174, -29.6624, -34.3419, -31.7719, -38.1712, -43.1502, -38.1094, -30.4994, -35.4411, -28.0925, -38.0254, -46.1582, -54.2776, -57.4159, -58.1393, -62.0019, -64.7906, -66.617, -66.8641, -67.9595, -68.4923, -64.2774, -66.3057, -71.0185, -66.3521, -66.6744, -74.0132, -74.2741, -74.0084, -77.0038, -77.8263, -79.7982, -81.6141, -84.8324, -83.0116, -78.8399, -80.0036, -82.2316, -85.9153, -88.287, -86.5993, -86.5254, -87.6255, -85.547, -82.6981, -81.9207, -83.0207, -85.0858, -87.9563, -88.8951, -88.7597, -91.535, -91.1643, -90.3037, -90.9228, -91.6386, -92.5816, -91.6312, -92.1499, -93.0089, -93.6103, -92.4225, -92.5531, -91.9902, -91.1374, -92.3066, -93.9915, -94.4577, -95.6327, -95.4712, -95.5121, -96.0279, -95.5249, -95.6975, -95.8713, -96.6633, -96.6698, -96.793, -97.1513, -97.0638, -96.6961, -97.0995, -96.7908, -96.8777, -97.2599, -97.5434, -97.6994, -97.926, -98.2169, -98.4003, -98.2356, -98.0629, -98.3839, -98.6968, -98.7231, -98.8543, -98.4641, -98.7903, -98.8662, -98.847, -98.898, -98.8854, -98.913, -99.0757, -99.182, -99.3479, -99.2867, -99.3382, -99.4504, -99.4789, -99.5818, -99.5706, -99.5178, -99.5993, -99.5851, -99.5509, -99.5648, -99.6238, -99.6911, -99.6933, -99.7652, -99.8119, -99.828, -99.8191, -99.8375, -99.8674, -99.8623, -99.8723, -99.8657, -99.8828, -99.8794, -99.9034, -99.8952, -99.8739, -99.8906, -99.8992, -99.894, -99.9006, -99.9181, -99.9262, -99.9339, -99.9273, -99.9235, -99.9257, -99.9272, -99.9218, -99.9241, -99.9352, -99.9493, -99.954, -99.9459, -99.9562, -99.9492, -99.9417, -99.9404, -99.9317, -99.9226, -99.9279, -99.9258, -99.9243, -99.9274, -99.9343, -99.9312, -99.926, -99.916, -99.9114, -99.9082, -99.925, -99.9134, -99.9008, -99.9261, -99.9263, -99.9308, -99.9299, -99.9254, -99.9356, -99.9416, -99.9517, -99.9515, -99.9624, -99.9652, -99.9665, -99.9716, -99.977, -99.9754, -99.9767, -99.9803, -99.9843, -99.987, -99.9867, -99.9872, -99.9887, -99.9902, -99.9905, -99.99, -99.9913, -99.9904, -99.9906, -99.9915, -99.9899, -99.9903, -99.989, -99.9898, -99.9905, -99.9903, -99.989, -99.9877, -99.9881, -99.9894, -99.9899, -99.9909, -99.9916, -99.9916, -99.9906, -99.9909, -99.9897, -99.9886, -99.9899, -99.991, -99.9903, -99.9897, -99.9895, -99.9906, -99.9906, -99.991, -99.9911, -99.9907, -99.9903, -99.9921, -99.9929, -99.9922, -99.9926, -99.992, -99.9918, -99.9914, -99.9932, -99.9939, -99.9937, -99.9939, -99.9945, -99.9939, -99.9931, -99.9926, -99.992, -99.9925, -99.9938, -99.9944, -99.9951, -99.9956, -99.9958, -99.9963, -99.9962, -99.9961, -99.9956, -99.9953, -99.9952, -99.9955, -99.9955, -99.9954, -99.9954, -99.9955, -99.9957, -99.9959, -99.9951, -99.9955, -99.9955, -99.9959, -99.9961, -99.9959, -99.9961, -99.9956, -99.9963, -99.9962, -99.9959, -99.9955, -99.9962, -99.9966, -99.997, -99.9969, -99.9965, -99.9963, -99.9966, -99.997, -99.9975, -99.9974, -99.9979, -99.9981, -99.9981, -99.9983, -99.9983, -99.9984, -99.9982, -99.9984, -99.9984, -99.9983, -99.9983, -99.9983, -99.9981, -99.9982, -99.998, -99.9982, -99.9982, -99.998, -99.9982, -99.9983, -99.998, -99.9982, -99.9979, -99.9979, -99.998, -99.9982, -99.998, -99.9981, -99.9982, -99.9981, -99.9978, -99.9979, -99.9983, -99.9984, -99.9985, -99.9984, -99.9981, -99.9984, -99.9985, -99.9986, -99.9984, -99.9983, -99.9982, -99.9981, -99.9982, -99.9979, -99.9978, -99.9979, -99.9979, -99.9977, -99.9975, -99.9973, -99.9973, -99.9973, -99.9974, -99.9972, -99.9973, -99.9976, -99.9979, -99.9982, -99.9984, -99.9985, -99.9984, -99.9984, -99.9985, -99.9986, -99.9987, -99.9985, -99.9982, -99.9981, -99.998, -99.998, -99.998, -99.9978, -99.9982, -99.9979, -99.9981, -99.9978, -99.9978, -99.9978, -99.998, -99.9982, -99.9981, -99.998, -99.9981, -99.9984, -99.9984, -99.9984, -99.9982, -99.9979, -99.9981, -99.9981, -99.9981, -99.9983, -99.9984, -99.9985, -99.9986, -99.9986, -99.9985, -99.9983, -99.9982, -99.9979, -99.9983, -99.9985, -99.9984, -99.9986, -99.9984, -99.9984, -99.9984, -99.9983, -99.9984, -99.9983, -99.998, -99.9979, -99.9976, -99.9976, -99.9973, -99.9973, -99.9973, -99.9972, -99.9972, -99.997], borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.2)', borderWidth:1.5, pointRadius:0, fill:true}]},
+                data:{labels:["2025-12-23", "2025-12-26", "2025-12-29", "2026-01-05", "2026-01-07", "2026-01-08", "2026-01-14", "2026-01-22", "2026-01-29", "2026-02-03", "2026-02-04", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-06", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-03", "2026-04-08", "2026-04-09", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-21", "2026-05-22", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"],
+                  datasets:[{label:'回撤 %', data:[0.0, -0.3453, -4.971, 0.0, -4.4465, -14.9363, -25.9666, -35.7121, -42.3479, -47.6805, -42.8547, -42.8868, -47.9993, -48.9822, -52.1278, -46.6141, -36.5532, -33.7912, -27.9922, -29.5971, -29.0784, -21.0809, -36.6863, -24.7098, -32.8613, -21.5833, -20.2297, -22.7937, -29.0358, -37.0211, -32.3218, -27.9912, -33.0649, -43.2329, -42.017, -42.2065, -34.1312, -25.3214, -31.3516, -33.4269, -30.878, -40.9869, -42.1644, -46.1684, -50.0872, -49.1633, -45.7145, -40.1849, -35.074, -26.4734, -39.177, -44.834, -43.2383, -48.7132, -43.0455, -43.1617, -42.5174, -38.7661, -44.0775, -38.2443, -27.1419, -26.8187, -15.325, -13.7999, -4.0604, -4.431, -3.0782, -1.6684, 0.0, 0.0],
+                    borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.2)',
+                    borderWidth:1.5, pointRadius:0, fill:true}]},
                 options:{responsive:true,maintainAspectRatio:false,animation:false,
-                  scales:{x:{ticks:{maxTicksLimit:12,autoSkip:true}}, y:{title:{display:true,text:'回撤 %'}}},
+                  scales:{x:{ticks:{maxTicksLimit:10,autoSkip:true}},
+                    y:{title:{display:true,text:'回撤 %'}}},
                   plugins:{legend:{display:false}}}
               });
 
-              new Chart(document.getElementById('icChart').getContext('2d'), {
-                type:'line',
-                data:{labels:["2023-06-27", "2023-06-28", "2023-06-29", "2023-07-04", "2023-07-05", "2023-07-06", "2023-07-10", "2023-07-11", "2023-07-12", "2023-07-13", "2023-07-21", "2023-07-25", "2023-07-26", "2023-07-31", "2023-08-10", "2023-08-21", "2023-08-22", "2023-08-24", "2023-08-31", "2023-09-01", "2023-09-04", "2023-09-05", "2023-09-06", "2023-09-08", "2023-09-14", "2023-09-18", "2023-09-25", "2023-09-26", "2023-09-27", "2023-09-28", "2023-10-09", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-13", "2023-10-16", "2023-10-18", "2023-10-19", "2023-10-20", "2023-10-23", "2023-10-24", "2023-10-25", "2023-10-26", "2023-10-27", "2023-10-30", "2023-10-31", "2023-11-01", "2023-11-02", "2023-11-03", "2023-11-06", "2023-11-07", "2023-11-08", "2023-11-09", "2023-11-10", "2023-11-13", "2023-11-14", "2023-11-15", "2023-11-16", "2023-11-17", "2023-11-20", "2023-11-21", "2023-11-22", "2023-11-23", "2023-11-24", "2023-11-27", "2023-11-28", "2023-11-29", "2023-11-30", "2023-12-01", "2023-12-04", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-18", "2023-12-19", "2023-12-20", "2023-12-21", "2023-12-22", "2023-12-25", "2023-12-26", "2023-12-27", "2023-12-28", "2023-12-29", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05", "2024-01-08", "2024-01-09", "2024-01-10", "2024-01-11", "2024-01-12", "2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18", "2024-01-19", "2024-01-22", "2024-01-23", "2024-01-25", "2024-01-26", "2024-01-29", "2024-01-30", "2024-02-05", "2024-02-07", "2024-02-08", "2024-02-19", "2024-02-20", "2024-02-21", "2024-02-22", "2024-02-23", "2024-02-26", "2024-02-27", "2024-02-28", "2024-02-29", "2024-03-01", "2024-03-04", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-11", "2024-03-12", "2024-03-13", "2024-03-14", "2024-03-15", "2024-03-18", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-25", "2024-03-26", "2024-03-27", "2024-03-28", "2024-03-29", "2024-04-01", "2024-04-02", "2024-04-03", "2024-04-08", "2024-04-10", "2024-04-11", "2024-04-12", "2024-04-17", "2024-04-18", "2024-04-19", "2024-04-24", "2024-04-25", "2024-04-26", "2024-04-29", "2024-04-30", "2024-05-06", "2024-05-07", "2024-05-08", "2024-05-09", "2024-05-14", "2024-05-16", "2024-05-17", "2024-05-20", "2024-05-22", "2024-05-23", "2024-05-28", "2024-06-03", "2024-06-07", "2024-06-12", "2024-06-13", "2024-06-17", "2024-06-19", "2024-06-20", "2024-06-26", "2024-06-27", "2024-07-11", "2024-07-12", "2024-07-24", "2024-07-25", "2024-07-29", "2024-07-30", "2024-07-31", "2024-08-01", "2024-08-02", "2024-08-05", "2024-08-06", "2024-08-07", "2024-08-08", "2024-08-15", "2024-08-16", "2024-08-19", "2024-08-28", "2024-08-30", "2024-09-03", "2024-09-04", "2024-09-05", "2024-09-06", "2024-09-09", "2024-09-10", "2024-09-12", "2024-09-13", "2024-09-19", "2024-09-20", "2024-09-23", "2024-09-24", "2024-09-25", "2024-09-26", "2024-09-27", "2024-09-30", "2024-10-08", "2024-10-09", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31", "2024-11-01", "2024-11-04", "2024-11-05", "2024-11-06", "2024-11-07", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-15", "2024-11-18", "2024-11-19", "2024-11-20", "2024-11-21", "2024-11-22", "2024-11-25", "2024-11-26", "2024-11-27", "2024-11-28", "2024-11-29", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-30", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-09", "2025-01-10", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-20", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-27", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-17", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-04-01", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-28", "2025-04-29", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-26", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-30", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-30", "2025-07-31", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-25", "2025-08-26", "2025-08-28", "2025-08-29", "2025-09-01", "2025-09-02", "2025-09-03", "2025-09-05", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-29", "2025-09-30", "2025-10-09", "2025-10-13", "2025-10-14", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-27", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-29", "2025-12-30", "2025-12-31", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-06", "2026-03-09", "2026-03-12", "2026-03-13", "2026-03-17", "2026-03-18", "2026-03-20", "2026-03-23", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-07", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-28", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"],
-                  datasets:[
-                    {label:'IC', data:[-0.819092, 0.885023, 0.163171, -0.876959, 0.928159, -0.355294, 0.794899, -0.432988, 0.196358, 0.972493, -0.884932, -0.808636, 0.23113, 0.355081, -0.405846, 0.897673, -0.040847, -0.661812, 0.42415, -0.873839, 0.9354, 0.98105, -0.815771, 0.136888, -0.305018, -0.047785, 0.054786, 0.334159, 0.959806, 0.44804, 0.994043, 0.581055, -0.837089, 0.256593, 0.749854, -0.999993, 0.726044, 0.453272, -0.799463, -0.0883, -0.999208, 0.510176, -0.949085, 0.898003, 0.177125, 0.222413, -0.803892, -0.160345, 0.604386, -0.746736, -0.99822, 0.88494, 0.486502, -0.979676, -0.204074, -0.616243, -0.999923, 0.780054, 0.985498, -0.791636, -0.449808, 0.956886, -0.997593, 0.072688, -0.974047, -0.877094, -0.846519, 0.948975, -0.819364, 0.597618, 0.366033, -0.36511, 0.759755, 0.999805, 0.700299, 0.648794, -0.879086, 0.387525, -0.879376, -0.916412, -0.856719, 0.626734, -0.744601, -0.290243, -0.887242, 0.284933, -0.466047, 0.259025, -0.317737, -0.954648, 0.754484, -0.921594, 0.99529, -0.403036, 0.810927, -0.986993, -0.99281, -0.228491, 0.03224, 0.675774, 0.539699, 0.7613, 0.686856, -0.68488, 0.655271, -0.993131, -0.253539, -0.996577, -0.157114, 0.996609, 0.46673, -0.340674, 0.263362, 0.336037, 0.236937, 0.656609, 0.617147, 0.790317, -0.041296, -0.829859, -0.03497, -0.993494, -0.370055, -0.987377, -0.998676, -0.99393, -0.416394, 0.823943, -0.763601, -0.818068, -0.277283, 0.479209, -0.751359, 0.812596, -0.899528, -0.696297, -0.591989, -0.244597, -0.61354, 0.496439, 0.126524, -0.336379, -0.778441, 0.081672, -0.99635, -0.199999, 0.94877, 0.893387, 0.052086, 0.973333, 0.468381, -0.650867, -0.061299, -0.750046, -0.546254, 0.132611, -0.39728, 0.794156, 0.540066, 0.711178, -0.264836, -0.777421, 0.977974, -0.693727, 0.016751, -0.995421, -0.994997, 0.537244, 0.98693, 0.708819, -0.254514, -0.719546, -0.670039, -0.418577, 0.745323, -0.228693, 0.525469, -0.799841, 0.802046, -0.008768, 0.906428, -0.998233, -0.796352, -0.989983, 0.998642, 0.571543, 0.973856, -0.212156, 0.996485, -0.655264, -0.99953, 0.948138, 0.980105, -0.743758, 0.836034, -0.148725, 0.892633, 0.353041, -0.60754, -0.225008, 0.587887, 0.227898, -0.747065, 0.911038, 0.907881, 0.995423, 0.623695, -0.517042, 0.448039, 0.436341, 0.494035, 0.991737, -0.61344, 0.983307, 0.491873, -0.446957, -0.205634, -0.563764, -0.934352, -0.934967, 0.473634, -0.342734, -0.053208, -0.2385, 0.994113, 0.675257, 0.891062, -0.214143, -0.326201, -0.477633, 0.380185, -0.745046, 0.978652, 0.326781, 0.975195, -0.999644, 0.782063, 0.868754, 0.04607, 0.137805, 0.853986, -0.938851, -0.629818, -0.711915, 0.609646, -0.893524, -0.222371, -0.295875, 0.997444, -0.823053, -0.587947, 1.0, -0.598134, 0.873283, -0.400487, -0.450283, -0.986603, -0.182559, 0.5155, 0.976011, -0.972264, -0.999407, -0.886872, -0.366964, -0.855274, -0.833073, 0.352351, -0.568713, 0.999544, 0.966316, -0.905983, -0.91106, -0.952229, 0.518792, -0.349492, -0.244836, -0.54209, -0.044065, 0.304765, -0.985904, -0.403346, -0.676857, 0.358868, -0.993537, -0.478319, -0.97501, 0.640122, 0.978789, 0.262005, 0.999871, 0.822649, 0.935667, -0.650343, 0.404889, -0.455739, 0.92738, 0.998258, 0.516252, -0.059762, 0.910402, -0.946382, 0.454466, -0.201149, 0.573504, -0.88966, 0.336112, -0.340449, -0.879916, -0.608585, -0.600611, -0.919017, 0.954858, 0.76204, 0.769869, 0.105696, -0.64869, 0.969937, 0.758526, 0.937718, -0.996984, 0.997771, 0.800096, 0.612019, -0.324861, -0.652403, 0.679727, -0.55216, 0.988174, -0.925215, -0.617685, -0.009902, 0.971863, -0.008578, 0.933323, -0.699821, 0.824121, 0.666801, 0.565051, -0.998991, 0.987649, -0.95918, 0.904428, -0.882957, -0.913458, 0.879281, 0.634129, 0.883498, 0.776407, 0.868181, 0.874535, -0.190525, -0.855925, 0.370634, -0.972113, -0.703876, -0.859272, 0.780781, -0.805214, -0.211686, 0.236795, -0.834446, 0.488021, -0.783962, 0.936087, -0.283928, -0.118438, 0.099929, -0.157673, -0.430134, -0.177937, -0.999653, 0.970426, -0.489601, 0.857823, -0.506169, -0.834155, -0.838018, 0.676498, 0.901266, -0.542192, 0.259666, -0.109334, 0.166203, -0.696865, -0.106657, -0.159693, 0.200685, -0.633128, 0.517754, 0.999609, 0.998426, -0.999929, -0.947694, -0.925114, 0.632051, 0.006134, -0.375752, 0.459341, -0.834875, 0.300886, -0.993409, -0.558779, 0.006218, -0.603434, 0.2003, 0.748604, -0.999837, -0.305312, 0.367465, 0.980032, -0.529015, -0.602428, 0.980507, 0.993822, 0.809146, 0.831485, 0.909187, 0.884639, 0.181824, 0.387236, 0.839642, -0.951538, -0.100972, -0.50056, 0.413594, 0.082162, 0.220025, 0.939908, 0.444732, 0.414509, -0.28994, 0.517755, 0.638489, -0.91451, -0.190538, 0.417734, 0.680641, 0.965609, -0.035497, -0.966613, 0.998214, 0.306799, -0.307954, 0.57397, 0.902965, -0.915419, -0.695886, 0.768751, 0.922216, -0.991723, 0.435343, -0.791311, 0.750114, -0.288502, 0.93447, -0.771594, 0.605763, 0.733658, -0.060892, -0.805228, -0.293716, 0.673021, 0.713431, -0.637457, -0.22336, 0.540551, -0.602, 0.518289, -0.999682, 0.292737, -0.997871, -0.04864, -0.861719, 0.689957, 0.997753, 0.608539, -0.724257, 0.331707, 0.728675, -0.568293, 0.464884, -0.527637, 0.574471, 0.946958, 0.460318, -0.871314, -0.847773, 0.759866, 0.984466, -0.575787, -0.985815, 0.954282, 0.544986, -0.751405, 0.950999, 0.900807, 0.653648, -0.139883, 0.793993, 0.962947, 0.172402, 0.961825, -0.756959, 0.770383, -0.42739, -0.90066, -0.998155, -0.962076, 0.942459, 0.945459, -0.87655, 0.599137, 0.994621, 0.663719, 0.72127, -0.464522, 0.973875, -0.78651, 0.995442, -0.225344, 0.997584, -0.004201, 0.90748, -0.996395, 0.999841, 0.748358, 0.966731, 0.552614, -0.199245, -0.987138, -0.980649, 0.999222, -0.754093, 0.891103, 0.97374, -0.233249, -0.728668, -0.289456, 0.906914, 0.852032, 0.970102, -0.992285, -0.9669, 0.987676, 0.991912, -0.780477, 0.547443, -0.693202, -0.628607, -0.917901, -0.858215, -0.636696, 0.23456, 0.845302, 0.663108, -0.893885, 0.814682, -0.35156, 0.350338, 0.360365, 0.777992, 0.874016, -0.943996, -0.998637, -0.857801, 0.995878, -0.592142, -0.252962, 0.728712, -0.825875, 0.962673, 0.982749, 0.099534, 0.243937, -0.933161, -0.290565, -0.989785, 0.634985, 0.994177], borderColor:'#3b82f6', borderWidth:1, pointRadius:0, tension:0.1},
-                    {label:'RankIC', data:[-1.0, 1.0, 0.5, -0.5, 1.0, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -1.0, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -1.0, 1.0, 1.0, -1.0, -0.5, -0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -1.0, 0.5, 0.5, -0.5, 0.5, -1.0, 0.5, -0.5, 1.0, 0.5, 0.5, -1.0, -0.5, 1.0, -1.0, -1.0, 1.0, 0.5, -1.0, -0.5, -0.5, -1.0, 0.5, 1.0, -1.0, -0.5, 1.0, -0.5, 0.5, -1.0, -0.5, -1.0, 1.0, -0.5, 0.5, 0.5, -0.5, 0.5, 1.0, 1.0, 0.5, -0.5, 0.5, -0.5, -0.5, -1.0, 0.5, -0.5, -0.5, -1.0, -0.5, -0.5, -0.5, 0.5, -1.0, 1.0, -1.0, 1.0, -0.5, 1.0, -1.0, -1.0, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -1.0, -0.5, -1.0, -0.5, 1.0, 0.5, -0.5, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, -0.5, -1.0, -0.5, -1.0, 0.5, -1.0, -1.0, -1.0, -0.5, 1.0, -1.0, -1.0, -0.5, 0.5, -0.5, 0.5, -1.0, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -1.0, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 1.0, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -1.0, -1.0, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -1.0, 1.0, 0.5, 1.0, -0.5, -1.0, -1.0, 1.0, 0.5, 1.0, -0.5, 1.0, -1.0, -1.0, 1.0, 1.0, -0.5, 1.0, -0.5, 1.0, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 1.0, 1.0, 1.0, 1.0, -1.0, -0.5, 0.5, 0.5, 0.5, -0.5, 1.0, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 1.0, -0.5, 0.5, -1.0, 0.5, 1.0, 0.5, -0.5, 1.0, -1.0, -0.5, -1.0, 1.0, -0.5, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -1.0, 1.0, -0.5, -0.5, -1.0, -0.5, 0.5, 0.5, -1.0, -1.0, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 1.0, 0.5, -1.0, -1.0, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -1.0, 0.5, -0.5, 0.5, -1.0, -0.5, -1.0, 0.5, 1.0, -0.5, 1.0, 1.0, 1.0, -0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, 1.0, -1.0, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.5, 0.5, -0.5, -0.5, 1.0, -0.5, 0.5, -1.0, -0.5, -0.5, 1.0, -0.5, 1.0, -0.5, 0.5, 0.5, 0.5, -1.0, 0.5, -0.5, 1.0, -0.5, -1.0, 1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -1.0, -0.5, 0.5, -1.0, 0.5, -1.0, 1.0, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -1.0, 0.5, -0.5, 1.0, -0.5, -1.0, -1.0, 1.0, 1.0, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 1.0, 1.0, -1.0, -0.5, -1.0, 0.5, 0.5, -0.5, 0.5, -1.0, 0.5, -1.0, -0.5, 0.5, -0.5, 0.5, 1.0, -1.0, 0.5, -0.5, 1.0, -0.5, -0.5, 1.0, 1.0, 1.0, 0.5, 0.5, 1.0, -0.5, 0.5, 1.0, -1.0, 0.5, -0.5, 0.5, -0.5, -0.5, 1.0, -0.5, 0.5, -0.5, 0.5, 0.5, -1.0, -0.5, 0.5, 0.5, 1.0, 0.5, -1.0, 1.0, 0.5, 0.5, 0.5, 0.5, -1.0, -0.5, 0.5, 1.0, -1.0, 0.5, -1.0, 0.5, -0.5, 1.0, -1.0, 0.5, 1.0, -0.5, -0.5, -0.5, 0.5, 1.0, -0.5, 0.5, 0.5, -0.5, 0.5, -1.0, 0.5, -0.5, -0.5, -1.0, 0.5, 1.0, 0.5, -0.5, -0.5, 1.0, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -1.0, -0.5, 0.5, 0.5, -0.5, -1.0, 0.5, 0.5, -0.5, 0.5, 1.0, 0.866025, -0.5, 0.5, 1.0, 0.5, 1.0, -0.5, 1.0, -0.5, -1.0, -1.0, -1.0, 0.5, 1.0, -0.5, 0.5, 1.0, 0.5, 0.5, -0.5, 1.0, -1.0, 1.0, 0.5, 1.0, -0.5, 0.5, -1.0, 1.0, 0.5, 1.0, 0.5, -0.5, -1.0, -1.0, 1.0, -0.5, 0.5, 1.0, -0.5, -0.5, -0.5, 0.5, 1.0, 0.5, -1.0, -1.0, 1.0, 1.0, -0.5, 0.5, -0.5, -0.5, -1.0, -1.0, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -1.0, -1.0, -1.0, 1.0, -0.5, -0.5, 1.0, -0.5, 1.0, 1.0, 0.5, 0.5, -1.0, -0.5, -0.5, 1.0, 1.0], borderColor:'#f59e0b', borderWidth:1, pointRadius:0, tension:0.1}
-                  ]},
-                options:{responsive:true,maintainAspectRatio:false,animation:false,
-                  scales:{x:{ticks:{maxTicksLimit:12,autoSkip:true}}, y:{title:{display:true,text:'IC 值'}}}}
-              });
-
-          new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+          new Chart(document.getElementById('oosMonthlyChart').getContext('2d'), {
             type:'bar',
-            data:{labels:["2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"], datasets:[{label:'月度收益 %', data:[-3.2418, -22.2204, -32.9861, -27.5281, -22.3624, -54.4702, -22.5027, -51.8873, -23.7466, -37.7211, -44.4052, -63.7265, -26.6637, -67.1228, -27.8314, -25.6816, 33.2119, 37.73, -75.2552, -64.5375, 36.5556, -20.7606, -33.3849, -40.3227, 10.3465, -53.3321, -13.6312, 7.3404, 6.3757, -22.972, 77.0646, -37.7012, 24.9005, -12.5387, -20.7468, 15.166, 84.3129], backgroundColor:["rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)"]}]},
+            data:{labels:["2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"],
+              datasets:[{label:'月度收益 %', data:[-3.6291, -37.7012, 24.9005, -12.5387, -20.7468, 15.166, 84.3129], backgroundColor:["rgba(239,68,68,0.8)", "rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)", "rgba(239,68,68,0.8)", "rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)"]}]},
             options:{responsive:true,maintainAspectRatio:false,animation:false,
-              scales:{y:{title:{display:true,text:'收益 %'}}},
+              scales:{y:{title:{display:true,text:'月度收益 %'}}},
               plugins:{legend:{display:false}}}
           });
 
-          new Chart(document.getElementById('quintileChart').getContext('2d'), {
-            type:'bar',
-            data:{labels:["Q1", "Q2", "Q3", "Q4", "Q5"], datasets:[{label:'平均 forward_return %', data:[NaN, NaN, NaN, NaN, NaN], backgroundColor:["rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)"]}]},
+          new Chart(document.getElementById('icChart').getContext('2d'), {
+            type:'line',
+            data:{labels:["2023-06-27", "2023-06-28", "2023-06-29", "2023-07-04", "2023-07-05", "2023-07-06", "2023-07-10", "2023-07-11", "2023-07-12", "2023-07-13", "2023-07-21", "2023-07-25", "2023-07-26", "2023-07-31", "2023-08-10", "2023-08-21", "2023-08-22", "2023-08-24", "2023-08-31", "2023-09-01", "2023-09-04", "2023-09-05", "2023-09-06", "2023-09-08", "2023-09-14", "2023-09-18", "2023-09-25", "2023-09-26", "2023-09-27", "2023-09-28", "2023-10-09", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-13", "2023-10-16", "2023-10-18", "2023-10-19", "2023-10-20", "2023-10-23", "2023-10-24", "2023-10-25", "2023-10-26", "2023-10-27", "2023-10-30", "2023-10-31", "2023-11-01", "2023-11-02", "2023-11-03", "2023-11-06", "2023-11-07", "2023-11-08", "2023-11-09", "2023-11-10", "2023-11-13", "2023-11-14", "2023-11-15", "2023-11-16", "2023-11-17", "2023-11-20", "2023-11-21", "2023-11-22", "2023-11-23", "2023-11-24", "2023-11-27", "2023-11-28", "2023-11-29", "2023-11-30", "2023-12-01", "2023-12-04", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-18", "2023-12-19", "2023-12-20", "2023-12-21", "2023-12-22", "2023-12-25", "2023-12-26", "2023-12-27", "2023-12-28", "2023-12-29", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05", "2024-01-08", "2024-01-09", "2024-01-10", "2024-01-11", "2024-01-12", "2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18", "2024-01-19", "2024-01-22", "2024-01-23", "2024-01-25", "2024-01-26", "2024-01-29", "2024-01-30", "2024-02-05", "2024-02-07", "2024-02-08", "2024-02-19", "2024-02-20", "2024-02-21", "2024-02-22", "2024-02-23", "2024-02-26", "2024-02-27", "2024-02-28", "2024-02-29", "2024-03-01", "2024-03-04", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-11", "2024-03-12", "2024-03-13", "2024-03-14", "2024-03-15", "2024-03-18", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-25", "2024-03-26", "2024-03-27", "2024-03-28", "2024-03-29", "2024-04-01", "2024-04-02", "2024-04-03", "2024-04-08", "2024-04-10", "2024-04-11", "2024-04-12", "2024-04-17", "2024-04-18", "2024-04-19", "2024-04-24", "2024-04-25", "2024-04-26", "2024-04-29", "2024-04-30", "2024-05-06", "2024-05-07", "2024-05-08", "2024-05-09", "2024-05-14", "2024-05-16", "2024-05-17", "2024-05-20", "2024-05-22", "2024-05-23", "2024-05-28", "2024-06-03", "2024-06-07", "2024-06-12", "2024-06-13", "2024-06-17", "2024-06-19", "2024-06-20", "2024-06-26", "2024-06-27", "2024-07-11", "2024-07-12", "2024-07-24", "2024-07-25", "2024-07-29", "2024-07-30", "2024-07-31", "2024-08-01", "2024-08-02", "2024-08-05", "2024-08-06", "2024-08-07", "2024-08-08", "2024-08-15", "2024-08-16", "2024-08-19", "2024-08-28", "2024-08-30", "2024-09-03", "2024-09-04", "2024-09-05", "2024-09-06", "2024-09-09", "2024-09-10", "2024-09-12", "2024-09-13", "2024-09-19", "2024-09-20", "2024-09-23", "2024-09-24", "2024-09-25", "2024-09-26", "2024-09-27", "2024-09-30", "2024-10-08", "2024-10-09", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31", "2024-11-01", "2024-11-04", "2024-11-05", "2024-11-06", "2024-11-07", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-15", "2024-11-18", "2024-11-19", "2024-11-20", "2024-11-21", "2024-11-22", "2024-11-25", "2024-11-26", "2024-11-27", "2024-11-28", "2024-11-29", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-30", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-09", "2025-01-10", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-20", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-27", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-17", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-04-01", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-28", "2025-04-29", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-26", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-30", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-30", "2025-07-31", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-25", "2025-08-26", "2025-08-28", "2025-08-29", "2025-09-01", "2025-09-02", "2025-09-03", "2025-09-05", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-29", "2025-09-30", "2025-10-09", "2025-10-13", "2025-10-14", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-27", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-29", "2025-12-30", "2025-12-31", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-06", "2026-03-09", "2026-03-12", "2026-03-13", "2026-03-17", "2026-03-18", "2026-03-20", "2026-03-23", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-07", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-28", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"],
+              datasets:[
+                {label:'IC', data:[-0.819092, 0.885023, 0.163171, -0.876959, 0.928159, -0.355294, 0.794899, -0.432988, 0.196358, 0.972493, -0.884932, -0.808636, 0.23113, 0.355081, -0.405846, 0.897673, -0.040847, -0.661812, 0.42415, -0.873839, 0.9354, 0.98105, -0.815771, 0.136888, -0.305018, -0.047785, 0.054786, 0.334159, 0.959806, 0.44804, 0.994043, 0.581055, -0.837089, 0.256593, 0.749854, -0.999993, 0.726044, 0.453272, -0.799463, -0.0883, -0.999208, 0.510176, -0.949085, 0.898003, 0.177125, 0.222413, -0.803892, -0.160345, 0.604386, -0.746736, -0.99822, 0.88494, 0.486502, -0.979676, -0.204074, -0.616243, -0.999923, 0.780054, 0.985498, -0.791636, -0.449808, 0.956886, -0.997593, 0.072688, -0.974047, -0.877094, -0.846519, 0.948975, -0.819364, 0.597618, 0.366033, -0.36511, 0.759755, 0.999805, 0.700299, 0.648794, -0.879086, 0.387525, -0.879376, -0.916412, -0.856719, 0.626734, -0.744601, -0.290243, -0.887242, 0.284933, -0.466047, 0.259025, -0.317737, -0.954648, 0.754484, -0.921594, 0.99529, -0.403036, 0.810927, -0.986993, -0.99281, -0.228491, 0.03224, 0.675774, 0.539699, 0.7613, 0.686856, -0.68488, 0.655271, -0.993131, -0.253539, -0.996577, -0.157114, 0.996609, 0.46673, -0.340674, 0.263362, 0.336037, 0.236937, 0.656609, 0.617147, 0.790317, -0.041296, -0.829859, -0.03497, -0.993494, -0.370055, -0.987377, -0.998676, -0.99393, -0.416394, 0.823943, -0.763601, -0.818068, -0.277283, 0.479209, -0.751359, 0.812596, -0.899528, -0.696297, -0.591989, -0.244597, -0.61354, 0.496439, 0.126524, -0.336379, -0.778441, 0.081672, -0.99635, -0.199999, 0.94877, 0.893387, 0.052086, 0.973333, 0.468381, -0.650867, -0.061299, -0.750046, -0.546254, 0.132611, -0.39728, 0.794156, 0.540066, 0.711178, -0.264836, -0.777421, 0.977974, -0.693727, 0.016751, -0.995421, -0.994997, 0.537244, 0.98693, 0.708819, -0.254514, -0.719546, -0.670039, -0.418577, 0.745323, -0.228693, 0.525469, -0.799841, 0.802046, -0.008768, 0.906428, -0.998233, -0.796352, -0.989983, 0.998642, 0.571543, 0.973856, -0.212156, 0.996485, -0.655264, -0.99953, 0.948138, 0.980105, -0.743758, 0.836034, -0.148725, 0.892633, 0.353041, -0.60754, -0.225008, 0.587887, 0.227898, -0.747065, 0.911038, 0.907881, 0.995423, 0.623695, -0.517042, 0.448039, 0.436341, 0.494035, 0.991737, -0.61344, 0.983307, 0.491873, -0.446957, -0.205634, -0.563764, -0.934352, -0.934967, 0.473634, -0.342734, -0.053208, -0.2385, 0.994113, 0.675257, 0.891062, -0.214143, -0.326201, -0.477633, 0.380185, -0.745046, 0.978652, 0.326781, 0.975195, -0.999644, 0.782063, 0.868754, 0.04607, 0.137805, 0.853986, -0.938851, -0.629818, -0.711915, 0.609646, -0.893524, -0.222371, -0.295875, 0.997444, -0.823053, -0.587947, 1.0, -0.598134, 0.873283, -0.400487, -0.450283, -0.986603, -0.182559, 0.5155, 0.976011, -0.972264, -0.999407, -0.886872, -0.366964, -0.855274, -0.833073, 0.352351, -0.568713, 0.999544, 0.966316, -0.905983, -0.91106, -0.952229, 0.518792, -0.349492, -0.244836, -0.54209, -0.044065, 0.304765, -0.985904, -0.403346, -0.676857, 0.358868, -0.993537, -0.478319, -0.97501, 0.640122, 0.978789, 0.262005, 0.999871, 0.822649, 0.935667, -0.650343, 0.404889, -0.455739, 0.92738, 0.998258, 0.516252, -0.059762, 0.910402, -0.946382, 0.454466, -0.201149, 0.573504, -0.88966, 0.336112, -0.340449, -0.879916, -0.608585, -0.600611, -0.919017, 0.954858, 0.76204, 0.769869, 0.105696, -0.64869, 0.969937, 0.758526, 0.937718, -0.996984, 0.997771, 0.800096, 0.612019, -0.324861, -0.652403, 0.679727, -0.55216, 0.988174, -0.925215, -0.617685, -0.009902, 0.971863, -0.008578, 0.933323, -0.699821, 0.824121, 0.666801, 0.565051, -0.998991, 0.987649, -0.95918, 0.904428, -0.882957, -0.913458, 0.879281, 0.634129, 0.883498, 0.776407, 0.868181, 0.874535, -0.190525, -0.855925, 0.370634, -0.972113, -0.703876, -0.859272, 0.780781, -0.805214, -0.211686, 0.236795, -0.834446, 0.488021, -0.783962, 0.936087, -0.283928, -0.118438, 0.099929, -0.157673, -0.430134, -0.177937, -0.999653, 0.970426, -0.489601, 0.857823, -0.506169, -0.834155, -0.838018, 0.676498, 0.901266, -0.542192, 0.259666, -0.109334, 0.166203, -0.696865, -0.106657, -0.159693, 0.200685, -0.633128, 0.517754, 0.999609, 0.998426, -0.999929, -0.947694, -0.925114, 0.632051, 0.006134, -0.375752, 0.459341, -0.834875, 0.300886, -0.993409, -0.558779, 0.006218, -0.603434, 0.2003, 0.748604, -0.999837, -0.305312, 0.367465, 0.980032, -0.529015, -0.602428, 0.980507, 0.993822, 0.809146, 0.831485, 0.909187, 0.884639, 0.181824, 0.387236, 0.839642, -0.951538, -0.100972, -0.50056, 0.413594, 0.082162, 0.220025, 0.939908, 0.444732, 0.414509, -0.28994, 0.517755, 0.638489, -0.91451, -0.190538, 0.417734, 0.680641, 0.965609, -0.035497, -0.966613, 0.998214, 0.306799, -0.307954, 0.57397, 0.902965, -0.915419, -0.695886, 0.768751, 0.922216, -0.991723, 0.435343, -0.791311, 0.750114, -0.288502, 0.93447, -0.771594, 0.605763, 0.733658, -0.060892, -0.805228, -0.293716, 0.673021, 0.713431, -0.637457, -0.22336, 0.540551, -0.602, 0.518289, -0.999682, 0.292737, -0.997871, -0.04864, -0.861719, 0.689957, 0.997753, 0.608539, -0.724257, 0.331707, 0.728675, -0.568293, 0.464884, -0.527637, 0.574471, 0.946958, 0.460318, -0.871314, -0.847773, 0.759866, 0.984466, -0.575787, -0.985815, 0.954282, 0.544986, -0.751405, 0.950999, 0.900807, 0.653648, -0.139883, 0.793993, 0.962947, 0.172402, 0.961825, -0.756959, 0.770383, -0.42739, -0.90066, -0.998155, -0.962076, 0.942459, 0.945459, -0.87655, 0.599137, 0.994621, 0.663719, 0.72127, -0.464522, 0.973875, -0.78651, 0.995442, -0.225344, 0.997584, -0.004201, 0.90748, -0.996395, 0.999841, 0.748358, 0.966731, 0.552614, -0.199245, -0.987138, -0.980649, 0.999222, -0.754093, 0.891103, 0.97374, -0.233249, -0.728668, -0.289456, 0.906914, 0.852032, 0.970102, -0.992285, -0.9669, 0.987676, 0.991912, -0.780477, 0.547443, -0.693202, -0.628607, -0.917901, -0.858215, -0.636696, 0.23456, 0.845302, 0.663108, -0.893885, 0.814682, -0.35156, 0.350338, 0.360365, 0.777992, 0.874016, -0.943996, -0.998637, -0.857801, 0.995878, -0.592142, -0.252962, 0.728712, -0.825875, 0.962673, 0.982749, 0.099534, 0.243937, -0.933161, -0.290565, -0.989785, 0.634985, 0.994177], borderColor:'#3b82f6', borderWidth:1, pointRadius:0, tension:0.1}
+                , {label:'RankIC', data:[-1.0, 1.0, 0.5, -0.5, 1.0, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -1.0, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -1.0, 1.0, 1.0, -1.0, -0.5, -0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -1.0, 0.5, 0.5, -0.5, 0.5, -1.0, 0.5, -0.5, 1.0, 0.5, 0.5, -1.0, -0.5, 1.0, -1.0, -1.0, 1.0, 0.5, -1.0, -0.5, -0.5, -1.0, 0.5, 1.0, -1.0, -0.5, 1.0, -0.5, 0.5, -1.0, -0.5, -1.0, 1.0, -0.5, 0.5, 0.5, -0.5, 0.5, 1.0, 1.0, 0.5, -0.5, 0.5, -0.5, -0.5, -1.0, 0.5, -0.5, -0.5, -1.0, -0.5, -0.5, -0.5, 0.5, -1.0, 1.0, -1.0, 1.0, -0.5, 1.0, -1.0, -1.0, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -1.0, -0.5, -1.0, -0.5, 1.0, 0.5, -0.5, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, -0.5, -1.0, -0.5, -1.0, 0.5, -1.0, -1.0, -1.0, -0.5, 1.0, -1.0, -1.0, -0.5, 0.5, -0.5, 0.5, -1.0, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -1.0, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 1.0, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -1.0, -1.0, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -1.0, 1.0, 0.5, 1.0, -0.5, -1.0, -1.0, 1.0, 0.5, 1.0, -0.5, 1.0, -1.0, -1.0, 1.0, 1.0, -0.5, 1.0, -0.5, 1.0, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 1.0, 1.0, 1.0, 1.0, -1.0, -0.5, 0.5, 0.5, 0.5, -0.5, 1.0, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 1.0, -0.5, 0.5, -1.0, 0.5, 1.0, 0.5, -0.5, 1.0, -1.0, -0.5, -1.0, 1.0, -0.5, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -1.0, 1.0, -0.5, -0.5, -1.0, -0.5, 0.5, 0.5, -1.0, -1.0, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 1.0, 0.5, -1.0, -1.0, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -1.0, 0.5, -0.5, 0.5, -1.0, -0.5, -1.0, 0.5, 1.0, -0.5, 1.0, 1.0, 1.0, -0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, 1.0, -1.0, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.5, 0.5, -0.5, -0.5, 1.0, -0.5, 0.5, -1.0, -0.5, -0.5, 1.0, -0.5, 1.0, -0.5, 0.5, 0.5, 0.5, -1.0, 0.5, -0.5, 1.0, -0.5, -1.0, 1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -1.0, -0.5, 0.5, -1.0, 0.5, -1.0, 1.0, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -1.0, 0.5, -0.5, 1.0, -0.5, -1.0, -1.0, 1.0, 1.0, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 1.0, 1.0, -1.0, -0.5, -1.0, 0.5, 0.5, -0.5, 0.5, -1.0, 0.5, -1.0, -0.5, 0.5, -0.5, 0.5, 1.0, -1.0, 0.5, -0.5, 1.0, -0.5, -0.5, 1.0, 1.0, 1.0, 0.5, 0.5, 1.0, -0.5, 0.5, 1.0, -1.0, 0.5, -0.5, 0.5, -0.5, -0.5, 1.0, -0.5, 0.5, -0.5, 0.5, 0.5, -1.0, -0.5, 0.5, 0.5, 1.0, 0.5, -1.0, 1.0, 0.5, 0.5, 0.5, 0.5, -1.0, -0.5, 0.5, 1.0, -1.0, 0.5, -1.0, 0.5, -0.5, 1.0, -1.0, 0.5, 1.0, -0.5, -0.5, -0.5, 0.5, 1.0, -0.5, 0.5, 0.5, -0.5, 0.5, -1.0, 0.5, -0.5, -0.5, -1.0, 0.5, 1.0, 0.5, -0.5, -0.5, 1.0, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -1.0, -0.5, 0.5, 0.5, -0.5, -1.0, 0.5, 0.5, -0.5, 0.5, 1.0, 0.866025, -0.5, 0.5, 1.0, 0.5, 1.0, -0.5, 1.0, -0.5, -1.0, -1.0, -1.0, 0.5, 1.0, -0.5, 0.5, 1.0, 0.5, 0.5, -0.5, 1.0, -1.0, 1.0, 0.5, 1.0, -0.5, 0.5, -1.0, 1.0, 0.5, 1.0, 0.5, -0.5, -1.0, -1.0, 1.0, -0.5, 0.5, 1.0, -0.5, -0.5, -0.5, 0.5, 1.0, 0.5, -1.0, -1.0, 1.0, 1.0, -0.5, 0.5, -0.5, -0.5, -1.0, -1.0, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -1.0, -1.0, -1.0, 1.0, -0.5, -0.5, 1.0, -0.5, 1.0, 1.0, 0.5, 0.5, -1.0, -0.5, -0.5, 1.0, 1.0], borderColor:'#f59e0b', borderWidth:1, pointRadius:0, tension:0.1}
+              ]},
             options:{responsive:true,maintainAspectRatio:false,animation:false,
-              scales:{y:{title:{display:true,text:'平均 forward_return %'}}},
-              plugins:{legend:{display:false}}}
+              scales:{x:{ticks:{maxTicksLimit:12,autoSkip:true}},
+                y:{title:{display:true,text:'IC 值'}}}}
+          });
+
+              new Chart(document.getElementById('streakFwdChart').getContext('2d'), {
+                type:'bar',
+                data:{labels:["3 \u677f", "4 \u677f", "5 \u677f", "6 \u677f", "7 \u677f", "8 \u677f", "9 \u677f", "10 \u677f", "11 \u677f", "12 \u677f", "13 \u677f", "15 \u677f", "18 \u677f"],
+                  datasets:[{label:'平均 forward_return %', data:[0.3136, -0.8489, 0.2242, 0.4784, -0.9356, 0.339, 1.1572, 1.6308, 2.2097, 3.8933, 1.3153, -0.8326, 1.0043], backgroundColor:["rgba(16,185,129,0.8)", "rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)", "rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)", "rgba(16,185,129,0.8)", "rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)"]}]},
+                options:{responsive:true,maintainAspectRatio:false,animation:false,
+                  scales:{y:{title:{display:true,text:'forward_return %'}}},
+                  plugins:{legend:{display:false},
+                    tooltip:{callbacks:{afterLabel:function(ctx){return 'n='+[805, 483, 269, 146, 89, 58, 34, 22, 19, 13, 10, 12, 6][ctx.dataIndex]+' 样本';}}}}}
+              });
+
+              new Chart(document.getElementById('signalFwdChart').getContext('2d'), {
+                type:'bar',
+                data:{labels:["buy", "watch", "hold", "unfillable"],
+                  datasets:[{label:'平均 forward_return %', data:[-1.1996, 0.4148, -0.2069, 0.491], backgroundColor:["rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)", "rgba(239,68,68,0.8)", "rgba(16,185,129,0.8)"]}]},
+                options:{responsive:true,maintainAspectRatio:false,animation:false,
+                  scales:{y:{title:{display:true,text:'forward_return %'}}},
+                  plugins:{legend:{display:false},
+                    tooltip:{callbacks:{afterLabel:function(ctx){return 'n='+[425, 464, 199, 884][ctx.dataIndex]+' 样本';}}}}}
+              });
+
+              new Chart(document.getElementById('allEquityChart').getContext('2d'), {
+                type:'line',
+                data:{labels:["2023-06-26", "2023-06-29", "2023-06-30", "2023-07-05", "2023-07-11", "2023-07-13", "2023-07-14", "2023-07-17", "2023-07-25", "2023-07-26", "2023-08-01", "2023-08-07", "2023-08-10", "2023-08-18", "2023-08-22", "2023-08-23", "2023-08-24", "2023-08-28", "2023-08-30", "2023-09-11", "2023-09-12", "2023-09-18", "2023-09-19", "2023-09-27", "2023-09-28", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-16", "2023-10-17", "2023-10-19", "2023-10-25", "2023-10-26", "2023-10-27", "2023-11-02", "2023-11-07", "2023-11-08", "2023-11-10", "2023-11-14", "2023-11-15", "2023-11-16", "2023-11-17", "2023-11-20", "2023-11-21", "2023-11-23", "2023-11-27", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-18", "2023-12-20", "2023-12-22", "2023-12-25", "2023-12-27", "2023-12-29", "2024-01-02", "2024-01-03", "2024-01-05", "2024-01-08", "2024-01-10", "2024-01-11", "2024-01-12", "2024-01-15", "2024-01-16", "2024-01-17", "2024-01-25", "2024-01-26", "2024-01-29", "2024-01-30", "2024-02-07", "2024-02-08", "2024-02-19", "2024-02-20", "2024-02-23", "2024-02-26", "2024-02-27", "2024-02-28", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-13", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-26", "2024-03-27", "2024-04-02", "2024-04-03", "2024-04-08", "2024-04-09", "2024-04-12", "2024-04-15", "2024-04-18", "2024-04-19", "2024-04-23", "2024-04-25", "2024-04-26", "2024-04-30", "2024-05-06", "2024-05-08", "2024-05-09", "2024-05-10", "2024-05-13", "2024-05-14", "2024-05-16", "2024-05-20", "2024-05-22", "2024-05-23", "2024-05-29", "2024-06-03", "2024-06-07", "2024-06-13", "2024-06-14", "2024-06-18", "2024-06-19", "2024-06-21", "2024-06-24", "2024-06-27", "2024-07-01", "2024-07-02", "2024-07-03", "2024-07-04", "2024-07-05", "2024-07-11", "2024-07-12", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-23", "2024-07-25", "2024-07-26", "2024-07-29", "2024-07-30", "2024-08-01", "2024-08-02", "2024-08-09", "2024-08-14", "2024-08-16", "2024-08-20", "2024-08-26", "2024-08-29", "2024-08-30", "2024-09-04", "2024-09-05", "2024-09-09", "2024-09-13", "2024-09-23", "2024-09-25", "2024-10-14", "2024-10-15", "2024-10-17", "2024-10-22", "2024-10-23", "2024-10-29", "2024-10-31", "2024-11-01", "2024-11-06", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-18", "2024-11-21", "2024-11-25", "2024-11-26", "2024-11-28", "2024-12-02", "2024-12-03", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-26", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-09", "2025-01-10", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-20", "2025-01-21", "2025-01-22", "2025-02-06", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-17", "2025-02-18", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-12", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-31", "2025-04-03", "2025-04-08", "2025-04-09", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-21", "2025-04-23", "2025-04-24", "2025-04-28", "2025-04-30", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-27", "2025-05-29", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-07", "2025-07-08", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-30", "2025-07-31", "2025-08-07", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-25", "2025-08-27", "2025-09-09", "2025-09-12", "2025-09-16", "2025-09-18", "2025-09-24", "2025-10-10", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-28", "2025-10-29", "2025-10-30", "2025-11-04", "2025-11-06", "2025-11-07", "2025-11-12", "2025-11-13", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-26", "2025-12-02", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-23", "2025-12-26", "2025-12-29", "2026-01-05", "2026-01-07", "2026-01-08", "2026-01-14", "2026-01-22", "2026-01-29", "2026-02-03", "2026-02-04", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-06", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-04-02", "2026-04-03", "2026-04-08", "2026-04-09", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-23", "2026-04-27", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-21", "2026-05-22", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22"],
+                  datasets:[{label:'资金倍数', data:[1.098179, 1.103036, 0.967582, 1.07186, 0.876641, 0.885141, 0.824879, 0.775848, 0.724232, 0.752581, 0.681994, 0.627073, 0.682675, 0.766616, 0.712108, 0.793166, 0.683601, 0.593894, 0.504334, 0.469718, 0.461739, 0.419133, 0.388372, 0.368226, 0.3655, 0.353418, 0.347541, 0.394033, 0.37166, 0.319676, 0.371148, 0.367593, 0.286643, 0.283766, 0.286697, 0.253656, 0.244584, 0.222833, 0.202803, 0.167304, 0.187389, 0.233404, 0.220567, 0.195992, 0.155359, 0.129198, 0.147815, 0.14863, 0.136495, 0.159421, 0.190846, 0.199421, 0.187288, 0.164509, 0.132846, 0.122491, 0.123985, 0.093372, 0.09746, 0.106954, 0.100125, 0.092229, 0.081827, 0.092311, 0.086589, 0.077114, 0.07048, 0.083583, 0.082142, 0.088351, 0.097758, 0.084861, 0.066275, 0.061134, 0.048173, 0.049955, 0.049504, 0.043814, 0.049362, 0.047458, 0.045541, 0.036805, 0.036733, 0.035374, 0.031423, 0.032387, 0.036443, 0.031994, 0.035398, 0.03444, 0.030224, 0.027097, 0.025376, 0.022877, 0.019668, 0.017646, 0.019462, 0.021367, 0.017827, 0.014375, 0.014084, 0.012637, 0.016942, 0.013344, 0.012506, 0.012719, 0.012155, 0.012295, 0.01199, 0.010195, 0.009022, 0.007192, 0.007868, 0.0073, 0.006062, 0.005748, 0.004613, 0.004736, 0.005318, 0.00442, 0.004576, 0.004954, 0.0048, 0.00415, 0.003407, 0.003383, 0.002589, 0.002075, 0.001897, 0.001996, 0.001792, 0.001463, 0.001519, 0.001408, 0.001481, 0.001293, 0.001331, 0.001065, 0.001156, 0.001391, 0.001207, 0.001112, 0.00117, 0.001097, 0.000903, 0.000814, 0.000729, 0.000801, 0.000843, 0.000819, 0.000803, 0.000863, 0.000837, 0.000715, 0.00056, 0.000508, 0.000597, 0.000483, 0.00056, 0.000643, 0.000657, 0.000753, 0.000854, 0.000795, 0.000818, 0.000835, 0.0008, 0.000725, 0.000759, 0.000816, 0.000927, 0.000977, 0.001013, 0.000827, 0.000955, 0.001095, 0.000815, 0.000813, 0.000763, 0.000774, 0.000823, 0.00071, 0.000644, 0.000533, 0.000535, 0.000415, 0.000384, 0.00037, 0.000314, 0.000254, 0.000271, 0.000257, 0.000217, 0.000173, 0.000143, 0.000147, 0.000141, 0.000125, 0.000108, 0.000105, 0.000111, 9.6e-05, 0.000106, 0.000104, 9.4e-05, 0.000112, 0.000107, 0.000121, 0.000113, 0.000105, 0.000107, 0.000121, 0.000135, 0.000131, 0.000117, 0.000112, 0.0001, 9.2e-05, 9.3e-05, 0.000104, 0.0001, 0.000113, 0.000126, 0.000111, 0.0001, 0.000107, 0.000114, 0.000116, 0.000104, 0.000104, 0.0001, 9.8e-05, 0.000102, 0.000107, 8.7e-05, 7.9e-05, 8.6e-05, 8.2e-05, 8.8e-05, 9e-05, 9.5e-05, 7.5e-05, 6.7e-05, 6.9e-05, 6.7e-05, 6.1e-05, 6.8e-05, 7.6e-05, 8.2e-05, 8.8e-05, 8.2e-05, 6.8e-05, 6.2e-05, 5.4e-05, 4.8e-05, 4.6e-05, 4.1e-05, 4.2e-05, 4.3e-05, 4.8e-05, 5.2e-05, 5.3e-05, 5e-05, 5e-05, 5e-05, 5e-05, 5e-05, 4.8e-05, 4.6e-05, 5.4e-05, 5e-05, 5e-05, 4.6e-05, 4.3e-05, 4.6e-05, 4.3e-05, 4.8e-05, 4.1e-05, 4.2e-05, 4.6e-05, 4.9e-05, 4.2e-05, 3.8e-05, 3.3e-05, 3.4e-05, 3.8e-05, 4.1e-05, 3.8e-05, 3.3e-05, 2.8e-05, 2.9e-05, 2.3e-05, 2.1e-05, 2.1e-05, 1.9e-05, 1.8e-05, 1.7e-05, 2e-05, 1.8e-05, 1.8e-05, 1.8e-05, 1.9e-05, 1.8e-05, 2.1e-05, 2e-05, 2.3e-05, 2e-05, 2e-05, 2.2e-05, 2e-05, 1.9e-05, 2.2e-05, 2e-05, 2.3e-05, 2.4e-05, 2.2e-05, 2e-05, 2.3e-05, 2.1e-05, 2e-05, 2.1e-05, 2.4e-05, 2.3e-05, 1.9e-05, 1.7e-05, 1.7e-05, 1.7e-05, 2.1e-05, 1.8e-05, 1.6e-05, 1.5e-05, 1.7e-05, 1.9e-05, 2e-05, 2.1e-05, 2e-05, 2.3e-05, 2.4e-05, 2.4e-05, 2.4e-05, 2.5e-05, 2.7e-05, 3e-05, 3e-05, 3e-05, 2.9e-05, 3.1e-05, 3e-05, 2.6e-05, 2.3e-05, 2e-05, 1.8e-05, 1.6e-05, 1.8e-05, 1.8e-05, 1.6e-05, 1.6e-05, 1.5e-05, 1.7e-05, 2e-05, 2e-05, 2.2e-05, 2.2e-05, 2.2e-05, 2.4e-05, 2e-05, 2.3e-05, 2.1e-05, 2.4e-05, 2.5e-05, 2.4e-05, 2.2e-05, 1.9e-05, 2.1e-05, 2.2e-05, 2.1e-05, 1.8e-05, 1.8e-05, 1.8e-05, 2e-05, 2.3e-05, 2.1e-05, 2.1e-05, 2.1e-05, 1.8e-05, 1.8e-05, 1.7e-05, 1.5e-05, 1.6e-05, 1.7e-05, 1.8e-05, 2e-05, 2.3e-05, 1.9e-05, 1.7e-05, 1.8e-05, 1.6e-05, 1.8e-05, 1.8e-05, 1.8e-05, 1.9e-05, 1.7e-05, 1.9e-05, 2.3e-05, 2.3e-05, 2.6e-05, 2.7e-05, 3e-05, 3e-05, 3e-05, 3e-05, 3.1e-05, 3.3e-05],
+                    borderColor:'#94a3b8', backgroundColor:'rgba(148,163,184,0.1)',
+                    borderWidth:1.5, pointRadius:0, fill:true}]},
+                options:{responsive:true,maintainAspectRatio:false,animation:false,
+                  scales:{x:{ticks:{maxTicksLimit:10,autoSkip:true}},
+                    y:{title:{display:true,text:'资金倍数'}}},
+                  plugins:{legend:{display:false}}}
+              });
+
+              new Chart(document.getElementById('allMonthlyChart').getContext('2d'), {
+                type:'bar',
+                data:{labels:["2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"],
+                  datasets:[{label:'月度 %', data:[-3.2418, -22.2204, -32.9861, -27.5281, -22.3624, -54.4702, -22.5027, -51.8873, -23.7466, -37.7211, -44.4052, -63.7265, -26.6637, -67.1228, -27.8314, -25.6816, 33.2119, 37.73, -75.2552, -64.5375, 36.5556, -20.7606, -33.3849, -40.3227, 10.3465, -53.3321, -13.6312, 7.3404, 6.3757, -22.972, 77.0646, -37.7012, 24.9005, -12.5387, -20.7468, 15.166, 84.3129], backgroundColor:["rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(239,68,68,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(16,185,129,0.7)"]}]},
+                options:{responsive:true,maintainAspectRatio:false,animation:false,
+                  scales:{y:{title:{display:true,text:'月度 %'}}},
+                  plugins:{legend:{display:false}}}
+              });
+
+          new Chart(document.getElementById('radarChart').getContext('2d'), {
+            type:'radar',
+            data:{labels:["concept leader", "concept followers rate", "early seal", "seal strength inv", "blow up inv", "position 60d"], datasets:[{"label": "002674.SZ", "data": [1, 0.367, 1, 0, 1.0, 1], "borderColor": "#3b82f6", "backgroundColor": "rgba(59,130,246,0.2)", "borderWidth": 2, "pointRadius": 3}, {"label": "605069.SH", "data": [1, 0.367, 0.597, 0, 0.593, 0.674], "borderColor": "#10b981", "backgroundColor": "rgba(16,185,129,0.2)", "borderWidth": 2, "pointRadius": 3}, {"label": "002167.SZ", "data": [1, 0.598, 0.046, 0, 0.548, 1], "borderColor": "#f59e0b", "backgroundColor": "rgba(245,158,11,0.2)", "borderWidth": 2, "pointRadius": 3}]},
+            options:{responsive:true,maintainAspectRatio:false,animation:false,
+              scales:{r:{min:0, max:1, ticks:{stepSize:0.2}}},
+              plugins:{legend:{display:true,position:'top'}}}
           });
 </script>
 </body>
