@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import time
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -31,7 +32,7 @@ import pandas as pd
 # ============================================================
 FACTOR_ID = "A3"
 FACTOR_NAME = "连板龙头接力"
-DEFAULT_DATA_VERSION = "pandadata-relay-streak3-v1"
+DEFAULT_DATA_VERSION = "pandadata-relay-streak3-v2"
 ASSET_TYPE = "stock"
 
 DAILY_CHUNK_DAYS = int(os.getenv("A3_DAILY_CHUNK_DAYS", "30"))   # 旧网关 504 易发，30 天/段稳妥
@@ -118,23 +119,60 @@ def _consecutive_true_streak(flags: pd.Series) -> pd.Series:
 # ============================================================
 # 数据层（PandaData 封装）
 # ============================================================
+def _load_pandadata_env() -> None:
+    """文档承诺凭证可放 ~/.pandadata/pandadata.env，这里 best-effort 加载。"""
+    env_file = Path.home() / ".pandadata" / "pandadata.env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip())
+
+
 def init_panda() -> Any:
     try:
         import panda_data
     except ModuleNotFoundError as exc:
         raise RuntimeError("无法导入 panda_data，请先 `pip install --upgrade panda_data`") from exc
-    user = os.getenv("PANDA_USERNAME") or os.getenv("PANDA_DATA_USERNAME")
-    pwd = os.getenv("PANDA_PASSWORD") or os.getenv("PANDA_DATA_PASSWORD")
+    _load_pandadata_env()
+    user = (os.getenv("PANDA_USERNAME") or os.getenv("PANDA_DATA_USERNAME")
+            or os.getenv("DEFAULT_USERNAME"))
+    pwd = (os.getenv("PANDA_PASSWORD") or os.getenv("PANDA_DATA_PASSWORD")
+           or os.getenv("DEFAULT_PASSWORD"))
     if not (user and pwd):
-        raise RuntimeError("缺少 PANDA_USERNAME / PANDA_PASSWORD 环境变量")
+        raise RuntimeError("缺少 PANDA_USERNAME / PANDA_PASSWORD 环境变量 "
+                           "(也可写入 ~/.pandadata/pandadata.env 的 DEFAULT_USERNAME / DEFAULT_PASSWORD)")
     # panda_data 0.0.9 默认 base_url = pandaaiquant.com（已是当前可用网关）；
     # 若 PandaAI 启用别的网关，可用 PANDA_BASE_URL 覆盖。
-    base_url = os.getenv("PANDA_BASE_URL")
+    base_url = os.getenv("PANDA_BASE_URL") or os.getenv("JAVA_SERVICE_BASE_URL")
     if base_url:
         panda_data.init_token(username=user, password=pwd, base_url=base_url)
     else:
         panda_data.init_token(username=user, password=pwd)
     return panda_data
+
+
+def _is_rate_limit_error(exc: Exception) -> bool:
+    """PandaData 500010 = 每分钟请求次数超限。"""
+    msg = str(exc)
+    return "500010" in msg or "每分钟请求次数超限" in msg
+
+
+def _call_with_rate_limit_retry(fn, *, label: str, max_retries: int = 3, sleep_seconds: int = 35):
+    """对 PandaData 调用包重试：仅在 500010（QPM 超限）时 sleep 后重试。
+    其它错误立即抛。重试 max_retries 次仍超限则抛最后一次错。"""
+    for attempt in range(max_retries + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            if _is_rate_limit_error(exc) and attempt < max_retries:
+                print(f"  [info] {label} 500010 限频，sleep {sleep_seconds}s 后重试 ({attempt + 1}/{max_retries})")
+                time.sleep(sleep_seconds)
+                continue
+            raise
 
 
 def _fetch_daily_once(pd_api: Any, start: str, end: str, indicator: str = "") -> pd.DataFrame:
@@ -243,11 +281,14 @@ def load_lhb(start: str, end: str, pd_api: Any | None = None,
         while cur <= end_d:
             seg_end = min(cur + timedelta(days=chunk_days - 1), end_d)
             try:
-                df_seg = pd_api.get_lhb_detail(
-                    symbol=None,
-                    start_date=cur.strftime("%Y%m%d"),
-                    end_date=seg_end.strftime("%Y%m%d"),
-                    side="buy", fields=[],
+                df_seg = _call_with_rate_limit_retry(
+                    lambda: pd_api.get_lhb_detail(
+                        symbol=None,
+                        start_date=cur.strftime("%Y%m%d"),
+                        end_date=seg_end.strftime("%Y%m%d"),
+                        side="buy", fields=[],
+                    ),
+                    label=f"lhb {cur}~{seg_end}",
                 )
                 if df_seg is not None and not df_seg.empty:
                     frames.append(df_seg)
@@ -284,11 +325,14 @@ def load_mktcap(start: str, end: str, symbols: list | None = None, pd_api: Any |
             seg_end = min(cur.replace(year=cur.year + seg_years) - timedelta(days=1), end_d) \
                 if cur.year + seg_years <= 9999 else end_d
             try:
-                df_seg = pd_api.get_factor(
-                    symbol=symbols or "",
-                    start_date=cur.strftime("%Y%m%d"),
-                    end_date=seg_end.strftime("%Y%m%d"),
-                    factors=["market_cap", "turnover", "close"], type="stock",
+                df_seg = _call_with_rate_limit_retry(
+                    lambda: pd_api.get_factor(
+                        symbol=symbols or "",
+                        start_date=cur.strftime("%Y%m%d"),
+                        end_date=seg_end.strftime("%Y%m%d"),
+                        factors=["market_cap", "turnover", "close"], type="stock",
+                    ),
+                    label=f"get_factor {cur}~{seg_end}",
                 )
                 if df_seg is not None and not df_seg.empty:
                     frames.append(df_seg)
@@ -476,10 +520,11 @@ def _concept_followers_rate(streak_map: pd.DataFrame,
     ref = ref.merge(concept_size.reset_index(), on=["signal_date", "concept"], how="left")
     # 一只票多概念取最大跟封数
     best = ref.groupby(["signal_date", "ts_code"])["n_in_concept"].max().reset_index()
-    out = streak_map.merge(best, on=["signal_date", "ts_code"], how="left")["n_in_concept"]
-    out = out.fillna(0).astype(float)
+    merged = streak_map.merge(best, on=["signal_date", "ts_code"], how="left")
+    merged.index = streak_map.index   # 按索引对齐（L4），避免位置错位致 NaN
+    out = merged["n_in_concept"].fillna(0).astype(float)
     # 归一化：log(1 + n) / log(20) 让 n=1 → 0.23, n=5 → 0.6, n=20 → 1.0
-    return np.log1p(out) / np.log(20.0)
+    return (np.log1p(out) / np.log(20.0)).reindex(idx).fillna(0.0)
 
 
 def _concept_leader_score(cand_keys: pd.DataFrame, streak_map: pd.DataFrame,

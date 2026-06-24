@@ -200,17 +200,19 @@ def main() -> None:
     print(f"[1/4] 读因子 parquet")
     factor = load_factor_panel(Path(args.factor_parquet))
 
-    # 2) 拉行情 + 构造 forward_return
-    print(f"[2/4] 拉行情构造 forward_return")
-    pd_api = init_panda()
-    quotes = filter_universe(load_daily(args.start, args.end, pd_api, indicator=args.indicator))
-    quotes["trade_date"] = pd.to_datetime(quotes["trade_date"])
-    forward = build_forward_returns(quotes)
-
-    # 3) 合并
-    print(f"[3/4] 合并 panel")
-    panel = factor.merge(forward, on=["trade_date", "ts_code"], how="inner")
-    panel = panel.dropna(subset=["factor_value", "forward_return"])
+    # 2) forward_return：优先用 parquet 缓存（factor.py 已生成），缺失时再拉行情
+    if "forward_return" in factor.columns and factor["forward_return"].notna().any():
+        print(f"[2/4] 使用 parquet 缓存的 forward_return（{factor['forward_return'].notna().sum()} 非空，省流量）")
+        panel = factor.dropna(subset=["factor_value", "forward_return"]).copy()
+    else:
+        print(f"[2/4] 拉行情构造 forward_return（parquet 无缓存）")
+        pd_api = init_panda()
+        quotes = filter_universe(load_daily(args.start, args.end, pd_api, indicator=args.indicator))
+        quotes["trade_date"] = pd.to_datetime(quotes["trade_date"])
+        forward = build_forward_returns(quotes)
+        print(f"[3/4] 合并 panel")
+        panel = factor.merge(forward, on=["trade_date", "ts_code"], how="inner")
+        panel = panel.dropna(subset=["factor_value", "forward_return"])
     print(f"      {len(panel)} 行")
 
     # 4) 双成本 × IS/OOS × 含/不含 IC gate
