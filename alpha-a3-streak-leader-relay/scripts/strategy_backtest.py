@@ -82,16 +82,42 @@ def compute_rolling_ic_gate(panel: pd.DataFrame, window: int = 60,
     return allowed_dates
 
 
+def _weighted_daily_return(group: pd.DataFrame, weighting: str = "equal",
+                            score_floor: float = 70.0) -> float:
+    """单日组合收益（按指定仓位加权）。
+
+    weighting:
+      - equal: 每只 1/N 等权
+      - score: 按 (score - score_floor) 加权（score 越高仓位越大）
+    """
+    if len(group) == 0:
+        return 0.0
+    if weighting == "score" and "score" in group.columns:
+        offset = (group["score"] - score_floor).clip(lower=0.01)
+        total = offset.sum()
+        if total > 1e-9:
+            w = offset / total
+            return float((group["forward_return"] * w).sum())
+    # fallback / equal
+    return float(group["forward_return"].mean())
+
+
 def run_strategy(panel: pd.DataFrame, top_n: int, cost: float,
                  with_curve: bool = False,
-                 ic_gate_dates: Optional[set] = None) -> dict:
-    """单组策略回测 → 资金曲线 + 完整指标。"""
+                 ic_gate_dates: Optional[set] = None,
+                 weighting: str = "equal") -> dict:
+    """单组策略回测 → 资金曲线 + 完整指标。
+
+    weighting: 'equal' (默认等权) / 'score' (按 score 大小加权,score 越高仓位越大)。
+    """
     picks = select_topn_per_day(panel, top_n, score_threshold=70, ic_gate_dates=ic_gate_dates)
     if picks.empty:
         return {"n_signals": 0, "n_filled": 0, "fill_rate": 0.0}
 
-    # 等权聚合每日组合收益：每日取 top-N 的 forward_return 均值 - cost（双边）
-    daily = picks.groupby("trade_date")["forward_return"].mean()
+    # 仓位加权聚合每日组合收益
+    daily = picks.groupby("trade_date").apply(
+        lambda g: _weighted_daily_return(g, weighting=weighting, score_floor=70.0)
+    )
     daily_net = daily - cost   # 双边成本一次性扣
 
     curve = (1 + daily_net).cumprod()
@@ -153,7 +179,8 @@ def render_markdown(scenarios: list[dict], cfg: dict) -> str:
     L.append(f"- 因子 parquet: `{cfg['factor_parquet']}`")
     L.append(f"- 行情区间: {cfg['quote_start']} ~ {cfg['quote_end']}")
     L.append(f"- 股票池: {cfg['pool_name']}")
-    L.append(f"- 每日 top-N: {cfg['top_n']}（等权分仓）")
+    wlabel = "按 score 加权" if cfg.get("weighting") == "score" else "等权分仓"
+    L.append(f"- 每日 top-N: {cfg['top_n']}（{wlabel}）")
     L.append("")
     L.append("## 执行规则")
     L.append("- **每日选股**: score >= 80 且可成交，按 rank 取 top-N")
@@ -187,6 +214,8 @@ def main() -> None:
     ap.add_argument("--end", default=datetime.now().strftime("%Y%m%d"))
     ap.add_argument("--indicator", default="", choices=["", "000300", "000852", "399303"])
     ap.add_argument("--top-n", type=int, default=3)
+    ap.add_argument("--weighting", default="score", choices=["equal", "score"],
+                    help="仓位加权方式：equal 等权 / score 按 (score-70) 加权（默认 score）")
     ap.add_argument("--out", default=str(DEFAULT_REPORT_MD))
     ap.add_argument("--out-json", default=str(DEFAULT_REPORT_JSON))
     args = ap.parse_args()
@@ -231,7 +260,8 @@ def main() -> None:
                 with_curve = (cost == COST_STD)
                 gate_arg = ic_gate_dates if gate_on else None
                 m = run_strategy(panel_part, top_n=args.top_n, cost=cost,
-                                 with_curve=with_curve, ic_gate_dates=gate_arg)
+                                 with_curve=with_curve, ic_gate_dates=gate_arg,
+                                 weighting=args.weighting)
                 scenarios.append({
                     "label": f"{gate_label} · {label_panel} · 成本={cost_label}",
                     "cost": cost, "ic_gate": gate_on,
@@ -241,7 +271,7 @@ def main() -> None:
     cfg = {
         "factor_parquet": args.factor_parquet,
         "quote_start": args.start, "quote_end": args.end,
-        "pool_name": pool_name, "top_n": args.top_n,
+        "pool_name": pool_name, "top_n": args.top_n, "weighting": args.weighting,
     }
     md = render_markdown(scenarios, cfg)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

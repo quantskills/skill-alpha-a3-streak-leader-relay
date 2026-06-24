@@ -48,6 +48,10 @@ tags: [quant, alpha, production, stock]
 | blow_up_proxy | float | 炸板风险（0-1，越大越易炸） |
 | position_60d | float | 60 日相对位置（0-1） |
 | lhb_hotmoney | float | 龙虎榜游资净买入（元） |
+| mkt_lu_count | int | 当日全市场涨停家数（大盘情绪原值） |
+| mkt_blow_up_rate | float | 当日全市场炸板率（大盘情绪原值） |
+| mkt_lu_z | float | mkt_lu_count 的 60 日 z-score（>0 = 游资活跃） |
+| mkt_blow_up_z | float | mkt_blow_up_rate 的 60 日 z-score（>0 = 抱团瓦解） |
 | is_one_word | bool | 是否一字板（t+1 不可成交参考） |
 | forward_return | float | T+1 open → T+2 vwap 毛收益（自带缓存，回测不重拉行情） |
 | fillable | bool | T+1 可成交（非一字、非开盘涨停、非停牌） |

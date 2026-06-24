@@ -8,6 +8,7 @@ real_runs/
 sources/
 *.parquet.bak
 *.parquet.bak.*
+*.json.bak.*
 *.tmp
 
 # 个人凭证 / 配置（防误传）

@@ -17,6 +17,7 @@ market_state 属于 t+1（9:25 竞价后），广播 join 回 t 行。
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import time
 import sys
@@ -42,15 +43,18 @@ DEFAULT_CONFIG: dict = {
     "min_streak": 3,
     "ref_min_streak": 2,
     "weights": {
-        "streak_band": 0.20,   # 板高（倒 U 型曲线，由 IS 拟合）
-        "leader": 0.20,
-        "early_seal": 0.15,
-        "seal_strength": 0.10,
-        "blow_up": -0.15,
-        "position": -0.10,
+        "streak_band": 0.18,   # 板高（倒 U 型曲线，由 IS 拟合）
+        "leader": 0.18,
+        "early_seal": 0.13,
+        "seal_strength": 0.09,
+        "blow_up": -0.13,
+        "position": -0.09,
         "lhb": 0.05,
-        "concept_followers": 0.05,   # 新增：题材跟封率
+        "concept_followers": 0.05,
+        "mkt_lu": 0.10,           # 新增：大盘当日涨停家数 60d z-score（情绪正向）
+        "mkt_blow_up": -0.10,     # 新增：大盘当日炸板率 60d z-score（情绪反向）
     },
+    "mkt_state_window": 60,        # 大盘情绪 z-score 滚动窗口（交易日）
     # 信号收敛：每日最多输出 top-N 信号（事件型因子，不是横截面）
     "max_signals_per_day": 3,
     # 绝对评分阈值（base_score 经 sigmoid 映射后的 score 0-100）
@@ -63,6 +67,37 @@ DEFAULT_CONFIG: dict = {
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]   # scripts → dev dir → repo root
 DEFAULT_OUT = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "database.parquet"
+DEFAULT_WEIGHTS_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "weights_calibrated.json"
+
+
+def load_calibrated_weights(path: Path | None = None) -> dict | None:
+    """加载校准后的权重 JSON（calibrate_weights.py 输出）。
+
+    JSON 结构: {"method": "icir", "trained_at": "...", "train_range": "...",
+                "weights": {"streak_band": 0.18, "leader": 0.20, ...}}
+
+    返回 weights dict 或 None（未找到/无效）。
+    """
+    p = path or DEFAULT_WEIGHTS_JSON
+    if not p.exists():
+        return None
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        w = data.get("weights")
+        if not isinstance(w, dict) or not w:
+            return None
+        return w
+    except Exception as e:
+        print(f"  [warn] 加载 {p.name} 失败 ({e})，回退 DEFAULT_CONFIG")
+        return None
+
+
+def apply_weights(cfg: dict, weights_override: dict | None) -> dict:
+    """把外部 weights 覆盖到 cfg 副本，返回新 cfg。"""
+    if not weights_override:
+        return cfg
+    new_cfg = {**cfg, "weights": {**cfg["weights"], **weights_override}}
+    return new_cfg
 
 
 # ============================================================
@@ -596,15 +631,57 @@ def _early_seal_from_minute(cand: pd.DataFrame, minute: Optional[pd.DataFrame],
     return cand.drop(columns=["early_seal_min", "blow_up_min"], errors="ignore")
 
 
+def compute_market_state(daily_streak: pd.DataFrame, window: int = 60) -> pd.DataFrame:
+    """大盘情绪标量子因子，每个 trade_date 一个值，所有候选股共享。
+
+    返回字段:
+      mkt_lu_count    : 当日全市场涨停家数
+      mkt_blow_up_rate: 当日全市场炸板率 = 触及涨停未封死 / 触及涨停
+      mkt_lu_z        : mkt_lu_count 的 window 日 z-score（>0 = 游资活跃）
+      mkt_blow_up_z   : mkt_blow_up_rate 的 window 日 z-score（>0 = 抱团瓦解）
+
+    用法: merge 到 ref（按 trade_date / signal_date）。
+    """
+    tol = 0.999
+    g = daily_streak.groupby("trade_date")
+    lu_count = g["is_limit_up_close"].sum().rename("mkt_lu_count")
+
+    def _blow_up_rate(sub):
+        touched = ((sub["high"] >= sub["eff_limit_up"] * tol)).sum()
+        if touched == 0:
+            return 0.0
+        not_sealed = ((sub["high"] >= sub["eff_limit_up"] * tol) & ~sub["is_limit_up_close"]).sum()
+        return float(not_sealed) / float(touched)
+
+    blow_rate = g.apply(_blow_up_rate).rename("mkt_blow_up_rate")
+    out = pd.concat([lu_count, blow_rate], axis=1).sort_index()
+
+    # 60 日 rolling z-score（含当日，z 截尾至 [-3, 3]）
+    out["mkt_lu_z"] = ((out["mkt_lu_count"] - out["mkt_lu_count"].rolling(window, min_periods=20).mean())
+                       / out["mkt_lu_count"].rolling(window, min_periods=20).std().replace(0, np.nan)).clip(-3, 3)
+    out["mkt_blow_up_z"] = ((out["mkt_blow_up_rate"] - out["mkt_blow_up_rate"].rolling(window, min_periods=20).mean())
+                            / out["mkt_blow_up_rate"].rolling(window, min_periods=20).std().replace(0, np.nan)).clip(-3, 3)
+    return out.reset_index()[["trade_date", "mkt_lu_count", "mkt_blow_up_rate", "mkt_lu_z", "mkt_blow_up_z"]]
+
+
 def compute_layer1(daily_streak: pd.DataFrame, concepts=None, lhb=None, minute=None,
                    mktcap=None, cfg: dict = DEFAULT_CONFIG) -> pd.DataFrame:
     """A3 横截面打分（唯一一层）。"""
+    # 大盘情绪标量（基于全 A daily_streak 算，跨日 z-score）
+    mkt_state = compute_market_state(daily_streak, window=cfg.get("mkt_state_window", 60))
+
     df = daily_streak.rename(columns={"trade_date": "signal_date"}).copy()
 
     # 参照集：当日 ≥ref_min_streak 板（缓解候选池过窄，z 在更宽集合上算）
     ref = df[df["limit_up_streak"] >= cfg["ref_min_streak"]].copy()
     if ref.empty:
         return pd.DataFrame()
+
+    # 把大盘情绪 broadcast 到每个候选股（同一日所有候选拿到同一对 z）
+    ref = ref.merge(
+        mkt_state.rename(columns={"trade_date": "signal_date"})[["signal_date", "mkt_lu_z", "mkt_blow_up_z", "mkt_lu_count", "mkt_blow_up_rate"]],
+        on="signal_date", how="left",
+    )
 
     # 封板强度代理：优先 -turnover；无 mktcap 用 -成交额横截面（当日 ref 集）
     if mktcap is not None and not mktcap.empty:
@@ -641,6 +718,10 @@ def compute_layer1(daily_streak: pd.DataFrame, concepts=None, lhb=None, minute=N
         ref["concept_followers_rate"] = 0.0
     ref["concept_followers_z"] = _xs_zscore(ref["concept_followers_rate"], by)
 
+    # 大盘情绪是当日标量（每股相同），直接用 z（已是 0 均值/单位 std 的跨日归一），无需横截面 z
+    ref["mkt_lu_z"] = ref["mkt_lu_z"].fillna(0)
+    ref["mkt_blow_up_z"] = ref["mkt_blow_up_z"].fillna(0)
+
     w = cfg["weights"]
     ref["base_score"] = (
         w.get("streak_band", w.get("streak", 0.20)) * ref["streak_band_score"]
@@ -651,6 +732,8 @@ def compute_layer1(daily_streak: pd.DataFrame, concepts=None, lhb=None, minute=N
         + w["position"] * ref["position_z"].fillna(0)
         + w["lhb"] * ref["lhb_z"].fillna(0)
         + w.get("concept_followers", 0.0) * ref["concept_followers_z"].fillna(0)
+        + w.get("mkt_lu", 0.0) * ref["mkt_lu_z"]
+        + w.get("mkt_blow_up", 0.0) * ref["mkt_blow_up_z"]
     )
 
     # 只保留 ≥min_streak 候选，在候选内做排名
@@ -679,6 +762,7 @@ def compute_layer1(daily_streak: pd.DataFrame, concepts=None, lhb=None, minute=N
             "concept_leader_score", "concept_followers_rate",
             "early_seal_score", "seal_strength_proxy",
             "blow_up_proxy", "position_60d", "lhb_hotmoney",
+            "mkt_lu_count", "mkt_blow_up_rate", "mkt_lu_z", "mkt_blow_up_z",
             "is_one_word", "eff_limit_up", "close", "open"]
     keep = [c for c in keep if c in cand.columns]
     return cand[keep].reset_index(drop=True)
@@ -859,6 +943,8 @@ STANDARD_COLS = [
     "concept_leader_score", "concept_followers_rate",
     "early_seal_score", "seal_strength_proxy",
     "blow_up_proxy", "position_60d", "lhb_hotmoney", "is_one_word",
+    # 大盘情绪标量子因子（当日所有候选共享）
+    "mkt_lu_count", "mkt_blow_up_rate", "mkt_lu_z", "mkt_blow_up_z",
     # forward_return 缓存（backtest 直接读，不再重拉行情）
     "forward_return", "fillable", "next_open", "vwap_t2",
     "data_version", "update_time",
@@ -873,13 +959,25 @@ def main() -> None:
     ap.add_argument("--indicator", default="", choices=["", "000300", "000852", "399303"],
                     help='股票池：""=全A / 000300=沪深300 / 000852=中证1000 / 399303=国证2000')
     ap.add_argument("--out", default=str(DEFAULT_OUT))
+    ap.add_argument("--weights", default=str(DEFAULT_WEIGHTS_JSON),
+                    help="校准权重 JSON 路径（见 calibrate_weights.py）；不存在则用 DEFAULT_CONFIG")
+    ap.add_argument("--no-calibrated", action="store_true",
+                    help="强制忽略 --weights，使用 DEFAULT_CONFIG 默认权重")
     args = ap.parse_args()
+
+    cfg = DEFAULT_CONFIG
+    if not args.no_calibrated:
+        w_override = load_calibrated_weights(Path(args.weights))
+        if w_override:
+            cfg = apply_weights(DEFAULT_CONFIG, w_override)
+            print(f"  [info] 使用校准权重: {args.weights}")
+            print(f"  [info] 权重 = {cfg['weights']}")
 
     pool_name = {"": "全A", "000300": "沪深300", "000852": "中证1000", "399303": "国证2000"}.get(args.indicator, args.indicator)
     print("=" * 64)
     print(f"Alpha-A3 连板龙头接力 | {args.start} ~ {args.end} | 股票池={pool_name}")
     print("=" * 64)
-    panel = run_factor(args.start, args.end, DEFAULT_CONFIG, with_minute=args.with_minute,
+    panel = run_factor(args.start, args.end, cfg, with_minute=args.with_minute,
                        indicator=args.indicator)
     if panel.empty:
         print("无候选结果，退出。")
