@@ -1,7 +1,22 @@
 ---
-name: alpha-A3-production
-description: 当需要读取「连板龙头接力」(A3) 因子的生产计算结果时，使用此 skill。该 skill 只读取已生成的 Parquet 结果，不在调用时重新计算因子。
-tags: [quant, alpha, production, stock]
+name: skill-alpha-a3-streak-leader-relay-production
+description: "读取 A3 连板龙头接力因子的生产 parquet（不在调用时重新计算）。Use when an agent needs to read pre-computed A3 streak-leader relay factor signals from the production parquet."
+quantSkills:
+  organization: https://github.com/quantskills
+  repository: quantskills/skill-alpha-a3-streak-leader-relay
+  repository_url: https://github.com/quantskills/skill-alpha-a3-streak-leader-relay
+  project_type: skill
+  collection: alpha-factor
+  license: GPL-3.0
+  category: factor
+  tags: [a-share, alpha-factor, streak-leader, production, parquet]
+  platforms: [claude-code, codex, openclaw, cursor]
+  language: zh-en
+  status: active
+  validation_level: community
+  maintainer_type: community
+  summary_zh: 读取 A3 生产 parquet 输出每日 top-3 信号，含 buy/watch/hold/unfillable 分级。
+  summary_en: Read A3 production parquet to surface daily top-3 signals classified as buy / watch / hold / unfillable.
 ---
 
 # 连板龙头接力 (A3) · 生产结果

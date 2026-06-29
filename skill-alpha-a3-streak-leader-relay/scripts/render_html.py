@@ -20,10 +20,10 @@ import pandas as pd
 
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_FACTOR_PARQUET = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "database.parquet"
-DEFAULT_FACTOR_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "backtest_metrics.json"
-DEFAULT_STRATEGY_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "strategy_backtest_metrics.json"
-DEFAULT_HTML = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "backtest_report.html"
+DEFAULT_FACTOR_PARQUET = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "database.parquet"
+DEFAULT_FACTOR_JSON = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "backtest_metrics.json"
+DEFAULT_STRATEGY_JSON = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "strategy_backtest_metrics.json"
+DEFAULT_HTML = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "backtest_report.html"
 
 
 def safe_load_json(p: Path):

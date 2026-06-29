@@ -26,8 +26,8 @@ import pandas as pd
 
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PARQUET = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "database.parquet"
-DEFAULT_OUT = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "weights_calibrated.json"
+DEFAULT_PARQUET = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "database.parquet"
+DEFAULT_OUT = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "weights_calibrated.json"
 
 # 子因子 → parquet 字段映射 + 期望符号（先验，校准如果反号会发出警告）
 # (raw_field, expected_sign)：+1 = 期望与 forward_return 正相关，-1 = 期望负相关

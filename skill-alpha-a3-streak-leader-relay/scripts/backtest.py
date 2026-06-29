@@ -38,9 +38,9 @@ from factor import init_panda, load_daily, filter_universe, FACTOR_ID, FACTOR_NA
 
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_FACTOR_PARQUET = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "database.parquet"
-DEFAULT_REPORT_MD = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "backtest_report.md"
-DEFAULT_REPORT_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "backtest_metrics.json"
+DEFAULT_FACTOR_PARQUET = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "database.parquet"
+DEFAULT_REPORT_MD = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "backtest_report.md"
+DEFAULT_REPORT_JSON = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "backtest_metrics.json"
 
 TRADING_DAYS_PER_YEAR = 244
 OOS_MONTHS = 6

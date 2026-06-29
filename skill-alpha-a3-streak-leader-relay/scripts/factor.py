@@ -66,8 +66,8 @@ DEFAULT_CONFIG: dict = {
 }
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]   # scripts → dev dir → repo root
-DEFAULT_OUT = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "database.parquet"
-DEFAULT_WEIGHTS_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay-production" / "weights_calibrated.json"
+DEFAULT_OUT = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "database.parquet"
+DEFAULT_WEIGHTS_JSON = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay-production" / "weights_calibrated.json"
 
 
 def load_calibrated_weights(path: Path | None = None) -> dict | None:
@@ -133,7 +133,7 @@ def _xs_zscore(values: pd.Series, by: pd.Series) -> pd.Series:
 def _load_streak_curve(path: Path | None = None) -> dict | None:
     """读 calibrate_streak.py 生成的板高评分曲线。"""
     import json as _json
-    p = path or (ALPHA_ROOT / "alpha-a3-streak-leader-relay" / "streak_curve_calibrated.json")
+    p = path or (ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay" / "streak_curve_calibrated.json")
     if not p.exists():
         return None
     try:

@@ -1,7 +1,23 @@
 ---
-name: alpha-A3
-description: 当需要开发、计算、验证「连板龙头接力」因子时，使用此 skill。从全 A 市场每日 ≥3 板候选中识别最值得 T+1 接力的龙头标的（top-N 事件型信号）。
-tags: [quant, alpha, development, stock, limit_up]
+name: skill-alpha-a3-streak-leader-relay
+description: "A 股连板龙头接力（A3）因子的开发、校准与回测 skill。从每日 ≥3 板候选池中识别 T+1 接力的事件型 top-N 信号，10 子因子（个股截面 8 + 大盘情绪 2），权重可用 ICIR + shrinkage 重训。Use when an agent needs to build, calibrate, validate, or backtest the A3 streak-leader relay factor with rolling IC gate and score-weighted positions."
+quantSkills:
+  organization: https://github.com/quantskills
+  repository: quantskills/skill-alpha-a3-streak-leader-relay
+  repository_url: https://github.com/quantskills/skill-alpha-a3-streak-leader-relay
+  project_type: skill
+  collection: alpha-factor
+  license: GPL-3.0
+  category: factor
+  tags: [a-share, alpha-factor, streak-leader, limit-up, event-driven, pandadata]
+  platforms: [claude-code, codex, openclaw, cursor]
+  language: zh-en
+  status: active
+  validation_level: community
+  maintainer_type: community
+  requires: [panda_data >= 0.0.9]
+  summary_zh: 用 PandaData 行情 + 概念 + 龙虎榜数据识别 ≥3 板龙头，含可重训子因子权重与大盘情绪 z-score 标量过滤。
+  summary_en: A-share streak-leader relay factor on ≥3 limit-up candidates, with retrainable sub-factor weights and market-state z-score scalar gating.
 ---
 
 # 连板龙头接力 Alpha（A3）

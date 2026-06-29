@@ -1,19 +1,44 @@
-# Alpha-A3 · 连板龙头接力因子
+# skill-alpha-a3-streak-leader-relay
 
-> 从全 A 市场每日 ≥3 板候选中识别最值得 T+1 接力的龙头标的（top-N 事件型信号）。
+[简体中文](README.md) | [English](README.en.md)
 
-## 🎯 研判摘要
+> 从全 A 市场每日 ≥3 板候选中识别 T+1 接力的事件型 top-N 信号 — 候选发现器，非交易策略。
 
-基于 2023-06 ~ 2026-06 共 722 个交易日 / 1978 条信号的全量回测：
+## ⚠️ 免责声明
 
-- ✅ **OOS 样本外有效**：近 6 月 IC=0.107 / ICIR=0.137，达学界可投资门槛 (ICIR > 0.10)。
-- ✅ **OOS 含 IC gate + 大盘情绪 + score 加权 = 当前最优**：ARR +421% / 累计 +33.8% / 夏普 1.87 / 胜率 51.6% / MDD -33%（标准 0.10% 双成本：万五佣金 + 印花税真实费率）。
-- ✅ **mkt_state 与 IC gate 强协同**：单独使用任一都拖累纯 A3，组合后效果跃升。
-- ⚠️ **裸用纯 A3 不推荐**：OOS 纯 A3 即使 0.10% 成本仍 -3.9%，必须配合 IC gate + 大盘情绪标量过滤。
-- 💡 **成本敏感度温和**：标准 0.10%→压力 0.15%（+0.05% 滑点）累计仍 +30.9%，万五佣金券商即可。
-- 🛠 **可训练 Skill**：8 个个股截面子因子权重可用 `calibrate_weights.py` 重校准（ICIR + shrinkage），默认值已经稳定。
+本仓库是 **仅供研究与教育的开源 skill 示例**，**不构成投资建议、收益承诺、官方背书或可生产部署的策略**。
 
-**定位**：候选发现器 + 严格择时过滤。**只在 IC gate 放行 + score≥80 + fillable 同时满足时下单**，paper trading 验证 1-2 个月后再实盘。完整可视化报告见 `alpha-a3-streak-leader-relay-production/backtest_report.html`。
+- 所有回测数据描述的是模型在**历史样本闭合区间内**的统计表现，不代表未来表现
+- 任何"年化"、"累计收益"等数字都是基于历史回测窗口外推的模型行为，**不是真实交易盈亏**
+- 因子高度依赖游资活跃环境，环境一变会失效
+- 实盘运行会遇到滑点、部分成交、停牌、跌停无法卖出、流动性枯竭等回测无法完全模拟的风险
+- 使用本项目所发生的任何决策与损失，由使用者自行承担
+
+## 🎯 因子定位
+
+A3 是一个**事件型 T+1 接力因子的 skill 框架**：
+
+1. 从全 A 市场每日 ≥3 板的股票中**筛选候选池**
+2. 用 **10 个子因子**（个股截面 8 + 大盘情绪 2）打分
+3. 输出**每日 top-3 候选**与 `buy` / `watch` / `hold` / `unfillable` 信号分级
+
+它是一个**研究层面的候选发现器**，不是黑盒交易策略。下游的择时、执行与风控规则由使用者自行决定。
+
+## 📊 历史样本表现（基于 2023-06 ~ 2026-06 闭合回测窗口）
+
+> 以下数据描述模型在历史窗口内的**回测统计行为**，不代表真实交易结果，也不代表未来可重现：
+
+- 2023-06 ~ 2026-06 共 722 个交易日、1978 条 ≥3 板候选信号
+- 近 6 个月样本外窗口（OOS）：
+  - 因子横截面预测力：IC ≈ 0.107、ICIR ≈ 0.137
+  - 含 IC gate + 大盘情绪 + score 加权组合在 0.10% 双边成本（万五佣金 + 印花税）假设下，回测窗口内**模型累计行为** ≈ +33.8%；最大回撤约 -33%
+  - 在 0.30% 假设成本下回测累计 ≈ +22.8%
+- 训练样本内（IS）IC ≈ 0.008，**与 OOS 显著分化** — 因子对游资活跃环境高度敏感
+
+**关键约束**：
+- 不能裸用纯 A3 — 必须配合 IC gate + 大盘情绪过滤
+- 成本敏感 — 实盘双边费率应控制在 ≤ 0.15%
+- 子因子权重可用 `calibrate_weights.py`（ICIR + shrinkage）重训，**但激进校准容易过拟合**，默认权重已经过经验调校
 
 ## 🔧 可训练能力
 
@@ -33,9 +58,9 @@ A3 是个**可调因子 skill**，不是黑盒：
 ## 目录结构
 
 ```
-alpha-a3-streak-leader-relay/
+skill-alpha-a3-streak-leader-relay/
 ├── README.md                              ← 本文件（交付说明）
-├── alpha-a3-streak-leader-relay/        ← 开发产物
+├── skill-alpha-a3-streak-leader-relay/        ← 开发产物
 │   ├── SKILL.md                           ← 因子设计书（开发版，按规则 V2 §5 模板）
 │   ├── skill.json                         ← Skill 元数据
 │   ├── streak_curve_calibrated.json       ← 板高 IS 拟合曲线（探索性产物）
@@ -49,7 +74,7 @@ alpha-a3-streak-leader-relay/
 │   │   └── calibrate_streak.py            ← 板高曲线 IS 拟合工具（探索性）
 │   └── references/
 │       └── data_guide.md                  ← 数据指南（必须文件）
-└── alpha-a3-streak-leader-relay-production/   ← 生产产物
+└── skill-alpha-a3-streak-leader-relay-production/   ← 生产产物
     ├── SKILL.md                           ← 生产读取说明（规则 V2 §8 模板）
     ├── database.parquet                   ← 因子计算结果（生产读取）
     ├── weights_calibrated.json            ← 子因子校准权重（可选；不存在则用默认）
@@ -66,11 +91,11 @@ export PANDA_USERNAME=<86 手机号>
 export PANDA_PASSWORD=<密码>
 
 # 2. 跑全套
-cd alpha-a3-streak-leader-relay/scripts
+cd skill-alpha-a3-streak-leader-relay/scripts
 
 # 2.1 计算因子（3 年全市场，~15 分钟）
 python factor.py --start 20230619 --end 20260619 \
-    --out ../../alpha-a3-streak-leader-relay-production/database.parquet
+    --out ../../skill-alpha-a3-streak-leader-relay-production/database.parquet
 
 # 2.1.5 [可选] 重训子因子权重（ICIR + shrinkage 校准）
 #   - 不跑就用 DEFAULT_CONFIG 默认权重（已经过经验调校）
@@ -83,22 +108,22 @@ python validate.py
 
 # 2.3 因子回测（指标 + 时序数据）
 python backtest.py --start 20230619 --end 20260619 \
-    --factor-parquet ../../alpha-a3-streak-leader-relay-production/database.parquet \
-    --out ../../alpha-a3-streak-leader-relay-production/backtest_report.md \
-    --out-json ../../alpha-a3-streak-leader-relay-production/backtest_metrics.json
+    --factor-parquet ../../skill-alpha-a3-streak-leader-relay-production/database.parquet \
+    --out ../../skill-alpha-a3-streak-leader-relay-production/backtest_report.md \
+    --out-json ../../skill-alpha-a3-streak-leader-relay-production/backtest_metrics.json
 
 # 2.4 策略层回测（top-N + 双成本 + IC gate 对比）
 python strategy_backtest.py --start 20230619 --end 20260619 \
-    --factor-parquet ../../alpha-a3-streak-leader-relay-production/database.parquet --top-n 3 \
-    --out ../../alpha-a3-streak-leader-relay-production/strategy_backtest_report.md \
-    --out-json ../../alpha-a3-streak-leader-relay-production/strategy_backtest_metrics.json
+    --factor-parquet ../../skill-alpha-a3-streak-leader-relay-production/database.parquet --top-n 3 \
+    --out ../../skill-alpha-a3-streak-leader-relay-production/strategy_backtest_report.md \
+    --out-json ../../skill-alpha-a3-streak-leader-relay-production/strategy_backtest_metrics.json
 
 # 2.5 HTML 可视化
 python render_html.py \
-    --factor-parquet ../../alpha-a3-streak-leader-relay-production/database.parquet \
-    --factor-report ../../alpha-a3-streak-leader-relay-production/backtest_metrics.json \
-    --strategy-report ../../alpha-a3-streak-leader-relay-production/strategy_backtest_metrics.json \
-    --out ../../alpha-a3-streak-leader-relay-production/backtest_report.html
+    --factor-parquet ../../skill-alpha-a3-streak-leader-relay-production/database.parquet \
+    --factor-report ../../skill-alpha-a3-streak-leader-relay-production/backtest_metrics.json \
+    --strategy-report ../../skill-alpha-a3-streak-leader-relay-production/strategy_backtest_metrics.json \
+    --out ../../skill-alpha-a3-streak-leader-relay-production/backtest_report.html
 ```
 
 ## 核心设计要点
@@ -108,8 +133,8 @@ python render_html.py \
 3. **A 股 T+1 制度**：T 日收盘后形成信号 → T+1 open 进 → T+2 vwap 出
 4. **forward_return 缓存**：parquet 自带，回测不重拉行情（省流量）
 5. **无 Layer 2 状态机**：v1/v2 状态机经回测证明有害（让胜率下降），删除；策略层用滚动 60 日 IC gate 替代
-6. **大盘情绪 + IC gate 协同**：mkt_state 标量子因子（当日全市场涨停家数 / 炸板率 60 日 z-score）+ 滚动 IC gate → OOS 含 gate ARR +220%
-7. **仓位 score 加权**：score 越高仓位越大（`--weighting score`），赔率 1.15→1.30
+6. **大盘情绪 + IC gate 协同**：mkt_state 标量子因子（当日全市场涨停家数 / 炸板率 60 日 z-score）+ 滚动 IC gate；ablation 显示两者组合显著改善 OOS 模型行为
+7. **仓位 score 加权**：score 越高仓位越大（`--weighting score`）
 
 ## 10 个子因子（个股截面 8 + 大盘情绪 2）
 

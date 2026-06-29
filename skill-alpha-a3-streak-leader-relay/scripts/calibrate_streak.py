@@ -30,7 +30,7 @@ from backtest import build_forward_returns  # noqa: E402
 
 
 ALPHA_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUT_JSON = ALPHA_ROOT / "alpha-a3-streak-leader-relay" / "streak_curve_calibrated.json"
+DEFAULT_OUT_JSON = ALPHA_ROOT / "skill-alpha-a3-streak-leader-relay" / "streak_curve_calibrated.json"
 
 
 def main():
