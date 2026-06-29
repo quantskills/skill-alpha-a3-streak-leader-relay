@@ -52,7 +52,7 @@ quantSkills:
 | factor_value | float | base_score 原值（z-score 加权和） |
 | score | float | sigmoid(base_score) × 100 ∈ [0, 100]（**绝对评分**，跨日可比） |
 | rank | int | 当日候选池排名（1 最强，每日只保留 rank ≤ 3） |
-| signal | string | `buy`(score≥70) / `watch`(score≥50) / `hold` / `unfillable`(t+1 一字板) |
+| signal | string | `buy`(score≥80) / `watch`(score≥50) / `hold` / `unfillable`（基于 `fillable=False` 的 T+1 精确判定：一字板 / 开盘涨停 / 停牌） |
 | confidence | float | 0-1 置信度 |
 | limit_up_streak | int | 当日连板数 |
 | streak_band_score | float | 板高横截面 z-score |

@@ -884,6 +884,15 @@ def run_factor(start: str, end: str, cfg: dict = DEFAULT_CONFIG, with_minute: bo
     print(f"      forward_return 非空率: {panel['forward_return'].notna().mean():.1%}")
     print(f"      fillable 比例: {panel['fillable'].mean():.1%}")
 
+    # 用 fillable=False 精确覆写 signal=unfillable（fillable 来自 T+1 实际开盘价对比涨停价，
+    # 比 is_one_word 的 T 日代理判断更精确；与文档"unfillable=T+1 一字板/开盘涨停/停牌"对齐）
+    if "fillable" in panel.columns:
+        unfillable_mask = panel["fillable"] == False  # noqa: E712 - 显式比较过滤 NaN
+        n_overwrite = int(unfillable_mask.sum() - (panel["signal"] == "unfillable").sum())
+        panel.loc[unfillable_mask, "signal"] = "unfillable"
+        if n_overwrite > 0:
+            print(f"      fillable=False 覆写 signal -> unfillable: 新增 {n_overwrite} 条")
+
     panel = add_metadata(panel, cfg)
 
     print("[6/6] 质量检查 ...")

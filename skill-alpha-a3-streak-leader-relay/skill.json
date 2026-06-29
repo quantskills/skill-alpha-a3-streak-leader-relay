@@ -1,16 +1,46 @@
 {
-  "name": "alpha-A3",
-  "description": "A3 连板龙头接力因子：三层架构（Layer1 横截面强度打分 + Layer2 时序市场状态机 + Layer3 早盘事件触发），识别每日 ≥3 板高度龙头并生成 T+1 接力信号（开盘买、收盘卖，封板顺延 t+2）。基于 PandaData，次日开盘可成交回测，标准 0.003 + 压力 0.005 双成本门槛，并按 market_state（容错/中性/加速）分组验证状态机有效性。",
-  "version": "1.0.0",
+  "name": "skill-alpha-a3-streak-leader-relay",
+  "description": "A 股连板龙头接力（A3）事件型因子的开发、校准与回测 skill。从每日 ≥3 板候选池中识别 T+1 接力的 top-N 信号，10 子因子（个股截面 8 + 大盘情绪 2），权重可用 ICIR + shrinkage 重训。仅供研究 / 教育用途，不构成投资建议。",
+  "version": "2.0.0",
   "factor_id": "A3",
   "asset_type": "stock",
-  "data_version": "pandadata-relay-streak3-v1",
+  "data_version": "pandadata-relay-streak3-v2",
+  "license": "GPL-3.0-only",
   "entrypoint": "scripts/factor.py",
   "entrypoints": {
     "factor": "scripts/factor.py",
     "validate": "scripts/validate.py",
     "backtest": "scripts/backtest.py",
-    "update_production": "scripts/update_production.py"
+    "strategy_backtest": "scripts/strategy_backtest.py",
+    "calibrate_weights": "scripts/calibrate_weights.py",
+    "render_html": "scripts/render_html.py"
   },
-  "tags": ["quant", "alpha", "development", "stock", "limit_up", "hotmoney_relay"]
+  "quantSkills": {
+    "organization": "https://github.com/quantskills",
+    "repository": "quantskills/skill-alpha-a3-streak-leader-relay",
+    "repository_url": "https://github.com/quantskills/skill-alpha-a3-streak-leader-relay",
+    "project_type": "skill",
+    "collection": "alpha-factor",
+    "license": "GPL-3.0",
+    "category": "factor",
+    "platforms": ["claude-code", "codex", "openclaw", "cursor"],
+    "language": "zh-en",
+    "status": "active",
+    "validation_level": "community",
+    "maintainer_type": "community"
+  },
+  "architecture": {
+    "layers": "single (no Layer2 state-machine, no Layer3 early-event trigger)",
+    "sub_factors_individual": [
+      "limit_up_streak", "concept_leader_score", "early_seal_score",
+      "seal_strength_proxy", "blow_up_proxy", "position_60d",
+      "lhb_hotmoney", "concept_followers_rate"
+    ],
+    "sub_factors_market_state": ["mkt_lu_z", "mkt_blow_up_z"],
+    "weighting": "horizontal z-score weighted sum + sigmoid mapping to score in [0, 100]",
+    "signal_classification": "buy (>=80) / watch (>=50) / hold / unfillable (T+1 one-word limit-up or halted)",
+    "ic_gate": "rolling 60d RankIC > 0.02 (strategy-layer filter, not in factor.py)",
+    "position_weighting": "score-weighted via strategy_backtest.py --weighting score"
+  },
+  "tags": ["quant", "alpha", "stock", "limit_up", "streak_leader", "event_driven", "a-share", "pandadata"]
 }

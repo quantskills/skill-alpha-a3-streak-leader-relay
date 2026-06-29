@@ -1,7 +1,7 @@
 # Alpha-A3 · 策略层回测报告
 
-- 生成时间: 2026-06-24T22:27:34
-- 因子 parquet: `../../alpha-a3-streak-leader-relay-production/database.parquet`
+- 生成时间: 2026-06-29T20:51:19
+- 因子 parquet: `../../skill-alpha-a3-streak-leader-relay-production/database.parquet`
 - 行情区间: 20230619 ~ 20260624
 - 股票池: 全A
 - 每日 top-N: 3（按 score 加权）
