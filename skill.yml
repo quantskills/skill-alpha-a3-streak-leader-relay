@@ -1,0 +1,58 @@
+# QuantSkills project manifest — skill-alpha-a3-streak-leader-relay
+metadata:
+  organization: QuantSkills
+  organization_url: https://github.com/quantskills
+  repository: skill-alpha-a3-streak-leader-relay
+  repository_url: https://github.com/quantskills/skill-alpha-a3-streak-leader-relay
+  project_type: skill
+  collection: alpha-factor
+  category: factor
+  license: GPL-3.0-only
+  status: community-project          # 未经官方审核/认证
+  maintainer: ZLHad
+
+name: 连板龙头接力 Alpha (A3 Streak-Leader Relay)
+summary: >-
+  从全 A 市场每日 ≥3 板候选池中识别 T+1 接力的事件型 top-N 信号，10 个子因子
+  （个股截面 8 + 大盘情绪 2），权重可用 ICIR + shrinkage 重训，含滚动 IC gate
+  与 score 加权组合。研究层面的候选发现器，非交易策略，不构成投资建议。
+
+declaration: SKILL.md
+detailed_skill: skill-alpha-a3-streak-leader-relay/SKILL.md
+production_skill: skill-alpha-a3-streak-leader-relay-production/SKILL.md
+readme:
+  zh: README.md
+  en: README.en.md
+
+data_source: PandaData (panda_data>=0.0.9) — 行情 + 概念 + 龙虎榜
+dependencies: [panda_data>=0.0.9, pandas, numpy, pyarrow]
+
+entrypoints:
+  factor: python skill-alpha-a3-streak-leader-relay/scripts/factor.py
+  calibrate_weights: python skill-alpha-a3-streak-leader-relay/scripts/calibrate_weights.py
+  calibrate_streak: python skill-alpha-a3-streak-leader-relay/scripts/calibrate_streak.py
+  backtest: python skill-alpha-a3-streak-leader-relay/scripts/backtest.py
+  strategy_backtest: python skill-alpha-a3-streak-leader-relay/scripts/strategy_backtest.py
+  validate: python skill-alpha-a3-streak-leader-relay/scripts/validate.py
+  render_html: python skill-alpha-a3-streak-leader-relay/scripts/render_html.py
+
+runtimes:
+  claude-code: { declaration: skill-alpha-a3-streak-leader-relay/SKILL.md, invoke: factor }
+  codex:       { declaration: SKILL.md, invoke: factor }
+  cursor:      { declaration: SKILL.md, invoke: factor }
+  openclaw:    { declaration: SKILL.md, invoke: factor }
+  hermes:      { declaration: SKILL.md, invoke: factor }
+
+known_limitations:
+  - 因子高度依赖游资活跃环境，环境改变会失效
+  - 训练样本内 IC ≈ 0.008 与样本外 IC ≈ 0.107 显著分化
+  - 不能裸用，必须配合 IC gate + 大盘情绪过滤
+  - 成本敏感：实盘双边费率应控制在 ≤ 0.15%
+  - 回测数字为历史闭合窗口内的模型统计行为，非真实交易盈亏
+
+disclaimer: >-
+  Community Project，未经 QuantSkills 官方审核/认证/背书。仅供研究与教育示例，
+  不构成投资建议，不承诺收益。回测数据描述模型在历史样本闭合区间内的统计表现，
+  不代表未来表现；实盘会遇到滑点、部分成交、停牌、跌停无法卖出、流动性枯竭等
+  回测无法完全模拟的风险。使用本项目所发生的任何决策与损失，由使用者自行承担。
+  数据来源、假设、参数、限制与风险边界见 SKILL.md 与 README.md。
