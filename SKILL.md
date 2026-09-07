@@ -1,8 +1,8 @@
 ---
 name: skill-alpha-a3-streak-leader-relay
-description: 连板龙头接力（A3）Alpha 因子——从全 A 市场每日 ≥3 板候选池中识别 T+1 接力的事件型 top-N 信号，10 个子因子（个股截面 8 + 大盘情绪 2），权重可用 ICIR + shrinkage 重训，含滚动 IC gate 与 score 加权。研究层面的候选发现器，非交易策略。
-tags: [a-share, alpha-factor, streak-leader, limit-up, event-driven, pandadata]
+description: 连板龙头接力 Alpha 因子（A3）：从全 A 每日三板及以上候选池中识别 T+1 接力的事件型 top-N 信号，十个子因子加 ICIR 收缩重训权重，含滚动 IC gate 与大盘情绪过滤，研究层面的候选发现器而非交易策略。Use when the user wants to compute, calibrate or backtest the streak-leader relay factor or inspect its IC and quantile diagnostics. Research and education only, not investment advice.
 license: GPL-3.0-only
+supported-runtimes: [cursor, claude-code, codex, hermes, openclaw]
 metadata:
   organization: QuantSkills
   organization_url: https://github.com/quantskills
@@ -10,10 +10,33 @@ metadata:
   repository_url: https://github.com/quantskills/skill-alpha-a3-streak-leader-relay
   project_type: skill
   collection: alpha-factor
+  maintainer: ZLHad
+  tags: [a-share, alpha-factor, streak-leader, limit-up, event-driven, pandadata]
+quantSkills:
+  schema_version: 2.1.0
+  organization: quantskills
+  organization_url: https://github.com/quantskills
+  repository: skill-alpha-a3-streak-leader-relay
+  repository_url: https://github.com/quantskills/skill-alpha-a3-streak-leader-relay
+  project_type: skill
   license: GPL-3.0-only
-  category: factor
-  status: community-project
-  platforms: [claude-code, codex, cursor, hermes, openclaw]
+  maintainer: ZLHad
+  collection: alpha-factor
+  catalog:
+    category: "02"
+    subcategory: 02.factor-generation
+  workflow:
+    primary_stage: evaluation
+    workflow_stages: [data-ingestion, feature-engineering, factor-generation, evaluation]
+  tags: [a-share, alpha-factor, streak-leader, limit-up, event-driven, pandadata]
+  platforms: [cursor, claude-code, codex, hermes, openclaw]
+  status: active
+  validation_level: listed
+  maintainer_type: community
+  summary_zh: "从全 A 每日三板及以上候选池识别 T+1 接力的事件型 top-N 信号，十个子因子加 ICIR 收缩重训，含滚动 IC gate 与情绪过滤，研究用候选发现器。"
+  summary_en: "Event-driven top-N relay signal from daily A-share streak leaders: ten sub-factors, ICIR-shrinkage weights, rolling IC gate and sentiment filter; research-only candidate finder, not a strategy."
+  interface:
+    mode: natural-language
 ---
 
 # 连板龙头接力 Alpha（A3）

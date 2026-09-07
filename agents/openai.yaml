@@ -1,3 +1,6 @@
+name: skill-alpha-a3-streak-leader-relay
+entrypoint: SKILL.md
+canonical_root: SKILL.md
 interface:
   display_name: "A3 Streak-Leader Relay Alpha"
   short_description: "Event-driven top-N relay signal from A-share ≥3-board streak leaders, research-only factor"

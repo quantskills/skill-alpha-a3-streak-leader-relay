@@ -1,7 +1,7 @@
 # Alpha-A3 连板龙头接力 · 因子回测报告
 
 - 生成时间: 2026-06-29T20:51:18
-- 因子 parquet: `../../skill-alpha-a3-streak-leader-relay-production/database.parquet`
+- 因子 parquet: `database.parquet`
 - 行情区间: 20230619 ~ 20260624
 - 股票池: 全A
 

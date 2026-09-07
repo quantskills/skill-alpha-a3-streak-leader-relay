@@ -176,7 +176,7 @@ python render_html.py \
 | score 范围 0-100 | ✅ |
 | signal 枚举合法 | ✅ (buy/watch/hold/unfillable) |
 
-## 局限与后续优化方向
+## 已知限制与后续优化方向
 
 | 局限 | 说明 | 后续 |
 |---|---|---|
