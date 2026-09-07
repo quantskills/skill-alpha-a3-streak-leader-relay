@@ -136,3 +136,13 @@ PandaData / PandaAI for the A-share market data interface. This project is commu
 ## Maintainer
 
 Community contribution. Open an Issue or Pull Request for questions, bug reports, or improvement proposals. No official endorsement or production-ready guarantee is implied.
+
+## Runtime entrypoints
+
+Per the QuantSkills community rules this repository ships entrypoints for multiple agent runtimes; the root [SKILL.md](SKILL.md) is the canonical declaration:
+
+| Runtime | Entrypoint |
+|---|---|
+| Claude Code / Codex | root `SKILL.md` (Codex interface metadata in [agents/openai.yaml](agents/openai.yaml)) |
+| Cursor | [.cursor/rules/quantskills-skill.mdc](.cursor/rules/quantskills-skill.mdc); full rule in [agents/cursor-rule.mdc](agents/cursor-rule.mdc) |
+| Hermes / OpenClaw | [agents/portable-loader.md](agents/portable-loader.md) (portable loader prompt) |

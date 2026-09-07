@@ -38,10 +38,10 @@ entrypoints:
 
 runtimes:
   claude-code: { declaration: skill-alpha-a3-streak-leader-relay/SKILL.md, invoke: factor }
-  codex:       { declaration: SKILL.md, invoke: factor }
-  cursor:      { declaration: SKILL.md, invoke: factor }
-  openclaw:    { declaration: SKILL.md, invoke: factor }
-  hermes:      { declaration: SKILL.md, invoke: factor }
+  codex:       { declaration: SKILL.md, invoke: factor, adapter: agents/openai.yaml }
+  cursor:      { declaration: SKILL.md, invoke: factor, adapter: .cursor/rules/quantskills-skill.mdc, rule: agents/cursor-rule.mdc }
+  hermes:      { declaration: SKILL.md, invoke: factor, adapter: agents/portable-loader.md }
+  openclaw:    { declaration: SKILL.md, invoke: factor, adapter: agents/portable-loader.md }
 
 known_limitations:
   - 因子高度依赖游资活跃环境，环境改变会失效

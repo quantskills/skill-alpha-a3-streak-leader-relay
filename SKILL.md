@@ -13,6 +13,7 @@ metadata:
   license: GPL-3.0-only
   category: factor
   status: community-project
+  platforms: [claude-code, codex, cursor, hermes, openclaw]
 ---
 
 # 连板龙头接力 Alpha（A3）

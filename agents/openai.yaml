@@ -1,0 +1,4 @@
+interface:
+  display_name: "A3 Streak-Leader Relay Alpha"
+  short_description: "Event-driven top-N relay signal from A-share ≥3-board streak leaders, research-only factor"
+  default_prompt: "Use $skill-alpha-a3-streak-leader-relay when the user wants to compute, calibrate, or backtest the A3 streak-leader relay alpha: pick T+1 relay top-N signals from daily ≥3-board candidates, retrain sub-factor weights, or inspect IC / quantile / equity-curve diagnostics. Read SKILL.md first and follow its data-scope rules."

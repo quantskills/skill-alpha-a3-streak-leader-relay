@@ -1,0 +1,7 @@
+---
+description: Load the A3 Streak-Leader Relay Alpha skill (skill-alpha-a3-streak-leader-relay) when the user wants to compute, calibrate, or backtest the A3 streak-leader relay alpha: pick T+1 relay top-N signals from daily ≥3-board candidates, retrain sub-factor weights, or inspect IC / quantile / equity-curve diagnostics.
+alwaysApply: false
+---
+
+Read and follow [SKILL.md](SKILL.md) as the canonical skill instructions.
+The full Cursor rule with workflow and hard rules is [agents/cursor-rule.mdc](agents/cursor-rule.mdc).

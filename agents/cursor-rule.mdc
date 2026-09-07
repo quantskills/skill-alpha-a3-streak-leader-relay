@@ -1,0 +1,41 @@
+---
+description: Use the A3 Streak-Leader Relay Alpha skill (skill-alpha-a3-streak-leader-relay) when the user wants to compute, calibrate, or backtest the A3 streak-leader relay alpha: pick T+1 relay top-N signals from daily ≥3-board candidates, retrain sub-factor weights, or inspect IC / quantile / equity-curve diagnostics.
+alwaysApply: false
+---
+
+# A3 Streak-Leader Relay Alpha Skill (skill-alpha-a3-streak-leader-relay)
+
+当用户想计算/校准/回测连板龙头接力（A3）Alpha 因子：从每日 ≥3 板候选中找 T+1 接力的 top-N 信号、重训子因子权重、看 IC/分层/资金曲线时，读取并遵循 [SKILL.md](../SKILL.md) 作为本 skill 的规范说明。
+详细调用声明见 `skill-alpha-a3-streak-leader-relay/SKILL.md`。
+
+Use this skill when the user wants to compute, calibrate, or backtest the A3 streak-leader relay alpha: pick T+1 relay top-N signals from daily ≥3-board candidates, retrain sub-factor weights, or inspect IC / quantile / equity-curve diagnostics. Read and follow [SKILL.md](../SKILL.md) as the canonical
+instructions; the detailed agent-facing declaration lives in `skill-alpha-a3-streak-leader-relay/SKILL.md`.
+
+## Workflow
+
+1. Read `SKILL.md`, then `skill-alpha-a3-streak-leader-relay/SKILL.md`.
+2. Read the references before changing any data logic:
+- `skill-alpha-a3-streak-leader-relay-production/SKILL.md`
+3. Run the entrypoints from the repository root:
+
+```bash
+python skill-alpha-a3-streak-leader-relay/scripts/factor.py
+python skill-alpha-a3-streak-leader-relay/scripts/calibrate_weights.py
+python skill-alpha-a3-streak-leader-relay/scripts/strategy_backtest.py
+python skill-alpha-a3-streak-leader-relay/scripts/validate.py
+```
+
+## Hard rules / 硬性口径
+
+1. 这是研究层面的候选发现器，不是交易策略；不能裸用，必须配合滚动 IC gate 与大盘情绪过滤
+2. 回测数字是历史闭合窗口内的模型统计行为，不是真实盈亏；不得改写成收益承诺
+3. 因子高度依赖游资活跃环境，样本内外 IC 显著分化，输出必须转达这些已知限制
+
+1. This is a research-level candidate finder, not a trading strategy; never use it bare, always with the rolling IC gate and market-sentiment filter
+2. Backtest figures are model statistics inside a closed historical window, not real P&L; never rewrite them as return promises
+3. The factor depends on an active hot-money regime and in-sample vs out-of-sample IC diverge sharply; the output must relay these known limits
+
+## Boundaries
+
+- Data source is PandaData via `panda_data`; credentials come only from environment variables or `~/.pandadata/pandadata.env`. Never hard-code or echo credentials.
+- Community Project, not reviewed, certified, or endorsed by QuantSkills. Research and educational use only; no investment advice, no return promises.
