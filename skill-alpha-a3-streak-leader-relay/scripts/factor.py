@@ -211,7 +211,7 @@ def _call_with_rate_limit_retry(fn, *, label: str, max_retries: int = 3, sleep_s
 
 
 def _fetch_daily_once(pd_api: Any, start: str, end: str, indicator: str = "") -> pd.DataFrame:
-    # panda_data >=0.0.9 接口文档命名：get_stock_daily（A股日线 OHLC + limit_up/down + trade_status）
+    # panda_data==1.0.6 接口文档命名：get_stock_daily（A股日线 OHLC + limit_up/down + trade_status）
     # indicator: ""=全A / "000300"=沪深300 / "000852"=中证1000 / "399303"=国证2000
     return pd_api.get_stock_daily(
         start_date=_compact(start), end_date=_compact(end),

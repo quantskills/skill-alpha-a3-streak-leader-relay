@@ -78,7 +78,7 @@ python skill-alpha-a3-streak-leader-relay/scripts/validate.py           # 交付
 
 ## 数据来源、假设与参数
 
-- **数据来源**：PandaData（`panda_data >= 0.0.9`）行情 + 概念 + 龙虎榜。
+- **数据来源**：PandaData（`panda_data==1.0.6`）行情 + 概念 + 龙虎榜。
   凭证走环境变量 `PANDA_USERNAME` / `PANDA_PASSWORD` 或 `~/.pandadata/pandadata.env`，**绝不硬编码**。
 - **假设**：≥3 板的高度龙头具备 T+1 接力的截面可区分性；子因子权重可由历史 ICIR 估计并做 shrinkage。
 - **参数**：候选门槛（≥3 板）、top-N（默认 3）、滚动 IC gate 窗口、大盘情绪 z-score 阈值、
@@ -97,3 +97,7 @@ python skill-alpha-a3-streak-leader-relay/scripts/validate.py           # 交付
 > 不构成投资建议，不承诺收益。** 使用本项目所发生的任何决策与损失，由使用者自行承担。
 
 License: **GPL-3.0-only**
+
+## Pandadata compatibility
+
+[Pandadata 1.0.6 compatibility](references/pandadata-compatibility.md) — exact SDK baseline, validation scope, and shared guidance for all supported agent runtimes.

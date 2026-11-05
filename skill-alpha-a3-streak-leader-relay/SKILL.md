@@ -15,7 +15,7 @@ quantSkills:
   status: active
   validation_level: community
   maintainer_type: community
-  requires: [panda_data >= 0.0.9]
+  requires: [panda_data==1.0.6]
   summary_zh: 用 PandaData 行情 + 概念 + 龙虎榜数据识别 ≥3 板龙头，含可重训子因子权重与大盘情绪 z-score 标量过滤。
   summary_en: A-share streak-leader relay factor on ≥3 limit-up candidates, with retrainable sub-factor weights and market-state z-score scalar gating.
 ---
