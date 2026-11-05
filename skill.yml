@@ -24,8 +24,8 @@ readme:
   zh: README.md
   en: README.en.md
 
-data_source: PandaData (panda_data>=0.0.9) — 行情 + 概念 + 龙虎榜
-dependencies: [panda_data>=0.0.9, pandas, numpy, pyarrow]
+data_source: PandaData (panda_data==1.0.6) — 行情 + 概念 + 龙虎榜
+dependencies: [panda_data==1.0.6, pandas, numpy, pyarrow]
 
 entrypoints:
   factor: python skill-alpha-a3-streak-leader-relay/scripts/factor.py

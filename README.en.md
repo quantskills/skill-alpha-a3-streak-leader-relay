@@ -40,7 +40,7 @@ skill-alpha-a3-streak-leader-relay/                    (this repository)
 
 ## Data source
 
-PandaData (`panda_data >= 0.0.9`) — interfaces used:
+PandaData (`panda_data==1.0.6`) — interfaces used:
 
 - `get_stock_daily` (A-share daily OHLC + limit_up / limit_down / trade_status)
 - `get_concept_constituents` / `get_concept_list`
@@ -146,3 +146,6 @@ Per the QuantSkills community rules this repository ships entrypoints for multip
 | Claude Code / Codex | root `SKILL.md` (Codex interface metadata in [agents/openai.yaml](agents/openai.yaml)) |
 | Cursor | [.cursor/rules/quantskills-skill.mdc](.cursor/rules/quantskills-skill.mdc); full rule in [agents/cursor-rule.mdc](agents/cursor-rule.mdc) |
 | Hermes / OpenClaw | [agents/portable-loader.md](agents/portable-loader.md) (portable loader prompt) |
+
+
+Pandadata compatibility maintenance: [abgyjaguo](https://github.com/abgyjaguo). Existing authorship is retained.
